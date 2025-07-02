@@ -11,47 +11,67 @@ const MentoringPage = () => {
   });
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
-  // Données simulées des mentors étudiants en informatique
+  // Données simulées des mentors étudiants en informatique de l'ÉSTIAM
   const mentors = [
     {
       id: 1,
       name: 'Emma Moreau',
-      department: 'Master 2 Informatique',
-      specialty: 'Développement Web, React, Node.js',
+      department: 'Mastère Développement Web & Mobile',
+      specialty: 'Front-end moderne (React, Vue, Tailwind)',
       availability: 'Lundi, Mercredi',
       rating: 4.8,
       image: 'https://randomuser.me/api/portraits/women/44.jpg',
-      bio: 'Étudiante en M2 Informatique, spécialisée en développement web fullstack. J\'aide les étudiants de licence à comprendre les concepts fondamentaux de la programmation web et à réaliser leurs projets React/Node.'
+      bio: 'Étudiante en Mastère Développement Web & Mobile (Bac+5), spécialisée en technologies front-end modernes. Je peux vous aider sur React, Vue.js, et l\'intégration avec Tailwind CSS pour créer des interfaces utilisateur performantes.'
     },
     {
       id: 2,
       name: 'Thomas Dupont',
-      department: 'L3 Informatique',
-      specialty: 'Algorithmes, Structures de données, Java',
+      department: 'BTS SIO option SLAM',
+      specialty: 'Développement web, mobile, logiciels métiers',
       availability: 'Mardi, Jeudi',
       rating: 4.6,
       image: 'https://randomuser.me/api/portraits/men/32.jpg',
-      bio: 'Passionné par l\'algorithmique et la programmation orientée objet. Je propose mon aide pour les TD de Java, les structures de données et l\'analyse d\'algorithmes.'
+      bio: 'Étudiant en BTS SIO SLAM (Bac+2), je maîtrise les bases du développement web et mobile. Je propose mon aide pour les projets de programmation, la création de sites web et le développement d\'applications simples.'
     },
     {
       id: 3,
       name: 'Sophie Martin',
-      department: 'Master 1 Cybersécurité',
-      specialty: 'Sécurité informatique, Réseaux, Linux',
+      department: 'Bachelor Cybersécurité & Réseaux',
+      specialty: 'Réseaux, cybersécurité, serveurs, virtualisation',
       availability: 'Mercredi, Vendredi',
       rating: 4.9,
       image: 'https://randomuser.me/api/portraits/women/68.jpg',
-      bio: 'Étudiante en cybersécurité, je peux vous aider sur les fondamentaux des réseaux, la sécurité informatique et l\'administration Linux. Expérience en pentesting et sécurisation d\'applications.'
+      bio: 'Étudiante en Bachelor Cybersécurité & Réseaux (Bac+3), je peux vous aider sur les fondamentaux des réseaux, la sécurité informatique et l\'administration de serveurs. Expérience en pentesting et sécurisation d\'infrastructures.'
     },
     {
       id: 4,
       name: 'Alexandre Petit',
-      department: 'Doctorat en IA',
-      specialty: 'Machine Learning, Python, Data Science',
+      department: 'Mastère Big Data & IA',
+      specialty: 'Analyse de données massives (Python, Spark, Hadoop)',
       availability: 'Lundi, Vendredi',
       rating: 4.7,
       image: 'https://randomuser.me/api/portraits/men/67.jpg',
-      bio: 'Doctorant en intelligence artificielle, je propose du soutien en Python, machine learning et analyse de données. Approche pédagogique pour rendre accessibles les concepts complexes d\'IA.'
+      bio: 'Étudiant en Mastère Big Data & Intelligence Artificielle (Bac+5), je propose du soutien en Python, analyse de données et machine learning. Je peux vous aider à comprendre les concepts d\'IA et à réaliser vos projets de data science.'
+    },
+    {
+      id: 5,
+      name: 'Julie Lefebvre',
+      department: 'Bachelor UX/UI Design',
+      specialty: 'UX/UI Design et développement front-end',
+      availability: 'Mardi, Jeudi',
+      rating: 4.8,
+      image: 'https://randomuser.me/api/portraits/women/33.jpg',
+      bio: 'Étudiante en Bachelor UX/UI Design (Bac+3), je suis passionnée par la création d\'interfaces utilisateur intuitives et esthétiques. Je peux vous aider à améliorer l\'expérience utilisateur de vos applications et à intégrer vos maquettes en HTML/CSS.'
+    },
+    {
+      id: 6,
+      name: 'Lucas Bernard',
+      department: 'Mastère No-Code / Low-Code',
+      specialty: 'Bubble, Webflow, Zapier, Airtable, Make',
+      availability: 'Lundi, Mercredi',
+      rating: 4.5,
+      image: 'https://randomuser.me/api/portraits/men/45.jpg',
+      bio: 'Étudiant en Mastère Développement No-Code / Low-Code (Bac+5), je suis spécialisé dans la création d\'applications sans code. Je peux vous montrer comment développer rapidement des solutions fonctionnelles avec Bubble, Webflow et automatiser des processus avec Zapier.'
     }
   ];
 
@@ -80,8 +100,8 @@ const MentoringPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">Mentorat Entre Étudiants en Informatique</h1>
-      <p className="text-gray-600 mb-6">Connectez-vous avec d'autres étudiants en informatique pour recevoir de l'aide sur vos projets ou partager vos compétences techniques</p>
+      <h1 className="text-2xl font-bold text-gray-800 mb-2">Mentorat Entre Étudiants de l'ÉSTIAM</h1>
+      <p className="text-gray-600 mb-6">Connectez-vous avec d'autres étudiants de l'ÉSTIAM pour recevoir de l'aide sur vos projets ou partager vos compétences dans votre spécialité informatique</p>
       
       <div className="flex flex-col md:flex-row gap-6">
         {/* Liste des mentors */}

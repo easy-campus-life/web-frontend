@@ -14,6 +14,7 @@ import UserPage from './features/user/UserPage';
 import LoginPage from './features/auth/LoginPage';
 import ProtectedRoute from './features/auth/ProtectedRoute';
 import MentoringPage from './features/mentoring/MentoringPage';
+import ForumPage from './features/forum/ForumPage';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -41,6 +42,7 @@ function App() {
           <Route path="chat" element={<ChatPage />} />
           <Route path="social" element={<SocialPage />} />
           <Route path="mentoring" element={<MentoringPage />} />
+          <Route path="forum" element={<ForumPage />} />
           <Route path="user" element={<UserPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

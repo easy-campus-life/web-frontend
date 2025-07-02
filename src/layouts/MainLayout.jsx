@@ -1,12 +1,22 @@
 import React from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import FloatingChatBot from '../components/FloatingChatBot';
 
 const MainLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   
   // Fonction pour déterminer si un lien est actif
   const isActive = (path) => {
     return location.pathname === path ? 'bg-blue-700' : '';
+  };
+  
+  // Fonction pour déconnecter l'utilisateur
+  const handleLogout = () => {
+    // Supprimer les données d'authentification
+    localStorage.removeItem('isAuthenticated');
+    // Rediriger vers la page de connexion
+    navigate('/login');
   };
 
   return (
@@ -20,7 +30,11 @@ const MainLayout = () => {
           </div>
           <div className="flex items-center space-x-2">
             <span className="text-sm mr-4">Espace Étudiants</span>
-            <Link to="/user" className="p-2 hover:bg-blue-600 rounded-full">
+            <Link 
+              to="/user"
+              className="p-2 hover:bg-blue-600 rounded-full flex items-center"
+              title="Mon profil"
+            >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
               </svg>
@@ -42,16 +56,16 @@ const MainLayout = () => {
               </svg>
             </Link>
             <Link 
+              to="/forum" 
+              className={`py-3 px-2 text-sm font-medium hover:bg-blue-50 border-b-2 ${location.pathname === '/forum' ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
+            >
+              Forum
+            </Link>
+            <Link 
               to="/affluence" 
               className={`py-3 px-2 text-sm font-medium hover:bg-blue-50 border-b-2 ${location.pathname === '/affluence' ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
             >
               Affluence
-            </Link>
-            <Link 
-              to="/chat" 
-              className={`py-3 px-2 text-sm font-medium hover:bg-blue-50 border-b-2 ${location.pathname === '/chat' ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
-            >
-              Chat
             </Link>
             <Link 
               to="/social" 
@@ -65,6 +79,12 @@ const MainLayout = () => {
             >
               Mentorat
             </Link>
+            <Link 
+              to="/chat" 
+              className={`py-3 px-2 text-sm font-medium hover:bg-blue-50 border-b-2 ${location.pathname === '/chat' ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
+            >
+              Chat
+            </Link>
           </div>
         </div>
       </nav>
@@ -73,6 +93,9 @@ const MainLayout = () => {
       <main className="flex-grow pb-6">
         <Outlet />
       </main>
+      
+      {/* Chat Assistant flottant */}
+      <FloatingChatBot />
     </div>
   );
 };
