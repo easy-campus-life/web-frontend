@@ -26,7 +26,7 @@ const ChatBotModal = ({ onClose, inline = false }) => {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/chat", {
+      const res = await fetch("https://ia-assistant-k4e5.onrender.com/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
