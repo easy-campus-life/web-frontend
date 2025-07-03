@@ -11,6 +11,16 @@ const MainLayout = () => {
     return location.pathname === path ? 'bg-blue-700' : '';
   };
   
+  // Fonction pour déterminer si un menu doit être en surbrillance
+  const isMenuActive = (path) => {
+    if (location.pathname === path) return true;
+    // Pour les pages de détail d'événements
+    if (path === '/social' && location.pathname.startsWith('/social/event/')) return true;
+    // Pour les pages de détail de mentorat
+    if (path === '/mentoring' && location.pathname.startsWith('/mentoring/session/')) return true;
+    return false;
+  };
+  
   // Fonction pour déconnecter l'utilisateur
   const handleLogout = () => {
     // Supprimer les données d'authentification
@@ -55,12 +65,7 @@ const MainLayout = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
               </svg>
             </Link>
-            <Link 
-              to="/forum" 
-              className={`py-3 px-2 text-sm font-medium hover:bg-blue-50 border-b-2 ${location.pathname === '/forum' ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
-            >
-              Forum
-            </Link>
+            {/* Lien vers le forum supprimé */}
             <Link 
               to="/affluence" 
               className={`py-3 px-2 text-sm font-medium hover:bg-blue-50 border-b-2 ${location.pathname === '/affluence' ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
@@ -69,13 +74,13 @@ const MainLayout = () => {
             </Link>
             <Link 
               to="/social" 
-              className={`py-3 px-2 text-sm font-medium hover:bg-blue-50 border-b-2 ${location.pathname === '/social' ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
+              className={`py-3 px-2 text-sm font-medium hover:bg-blue-50 border-b-2 ${isMenuActive('/social') ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
             >
               Événements
             </Link>
             <Link 
               to="/mentoring" 
-              className={`py-3 px-2 text-sm font-medium hover:bg-blue-50 border-b-2 ${location.pathname === '/mentoring' ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
+              className={`py-3 px-2 text-sm font-medium hover:bg-blue-50 border-b-2 ${isMenuActive('/mentoring') ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
             >
               Mentorat
             </Link>

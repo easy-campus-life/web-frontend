@@ -1,5 +1,5 @@
 // services/apiService.js
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://backend-production-ecb4.up.railway.app';
 
 class ApiService {
   constructor() {
@@ -135,43 +135,134 @@ class ApiService {
   async getUpcomingEvents() {
     return this.request('/events/upcoming/');
   }
-
-  // === MENTORS ===
-  async getMentors(skip = 0, limit = 100) {
-    return this.request(`/mentors/?skip=${skip}&limit=${limit}`);
+  
+  // === MENTORING ===
+  async getMentoringSessions(skip = 0, limit = 100) {
+    return this.request(`/mentoring/?skip=${skip}&limit=${limit}`);
   }
 
-  async getMentor(mentorId) {
-    return this.request(`/mentors/${mentorId}`);
+  async getMentoringSession(mentoringId) {
+    return this.request(`/mentoring/${mentoringId}`);
+  }
+  
+  async getMentorRequests(skip = 0, limit = 100) {
+    return this.request(`/mentoring/requests/?skip=${skip}&limit=${limit}`);
   }
 
-  async createMentor(mentorData) {
-    return this.request('/mentors/', {
+  async createMentoringSession(mentoringData) {
+    return this.request('/mentoring/', {
       method: 'POST',
-      body: JSON.stringify(mentorData),
+      body: JSON.stringify(mentoringData),
     });
   }
 
-  async updateMentor(mentorId, mentorData) {
-    return this.request(`/mentors/${mentorId}`, {
+  async updateMentoringSession(mentoringId, mentoringData) {
+    return this.request(`/mentoring/${mentoringId}`, {
       method: 'PUT',
-      body: JSON.stringify(mentorData),
+      body: JSON.stringify(mentoringData),
     });
   }
 
-  async deleteMentor(mentorId) {
-    return this.request(`/mentors/${mentorId}`, {
+  async deleteMentoringSession(mentoringId) {
+    return this.request(`/mentoring/${mentoringId}`, {
       method: 'DELETE',
     });
   }
 
   async getUserMentoring(userId) {
-    return this.request(`/mentors/user/${userId}/mentoring`);
+    return this.request(`/mentoring/user/${userId}/mentoring`);
   }
 
   async getUserSponsored(userId) {
-    return this.request(`/mentors/user/${userId}/sponsored`);
+    return this.request(`/mentoring/user/${userId}/sponsored`);
   }
+
+  // === CLASSROOMS ===
+  async getClassrooms(skip = 0, limit = 100) {
+    return this.request(`/classrooms/?skip=${skip}&limit=${limit}`);
+  }
+
+  async getClassroom(classroomId) {
+    return this.request(`/classrooms/${classroomId}`);
+  }
+
+  async createClassroom(classroomData) {
+    return this.request('/classrooms/', {
+      method: 'POST',
+      body: JSON.stringify(classroomData),
+    });
+  }
+
+  async updateClassroom(classroomId, classroomData) {
+    return this.request(`/classrooms/${classroomId}`, {
+      method: 'PUT',
+      body: JSON.stringify(classroomData),
+    });
+  }
+
+  async deleteClassroom(classroomId) {
+    return this.request(`/classrooms/${classroomId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getClassroomWithPresences(classroomId) {
+    return this.request(`/classrooms/${classroomId}/with-presences`);
+  }
+
+  // === PRESENCES ===
+  async getPresences(skip = 0, limit = 100) {
+    return this.request(`/presences/?skip=${skip}&limit=${limit}`);
+  }
+
+  async getPresence(presenceId) {
+    return this.request(`/presences/${presenceId}`);
+  }
+
+  async createPresence(presenceData) {
+    return this.request('/presences/', {
+      method: 'POST',
+      body: JSON.stringify(presenceData),
+    });
+  }
+
+  async updatePresence(presenceId, presenceData) {
+    return this.request(`/presences/${presenceId}`, {
+      method: 'PUT',
+      body: JSON.stringify(presenceData),
+    });
+  }
+
+  async deletePresence(presenceId) {
+    return this.request(`/presences/${presenceId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getClassroomOccupancy(classroomId) {
+    return this.request(`/presences/classroom/${classroomId}/occupancy`);
+  }
+
+  async getUserPresenceHistory(userId) {
+    return this.request(`/presences/user/${userId}/history`);
+  }
+
+  async getAffluenceOverview() {
+    return this.request('/presences/analytics/overview');
+  }
+  
+  async getClassroomAffluenceTrends(classroomId) {
+    return this.request(`/presences/analytics/classroom/${classroomId}/trends`);
+  }
+  
+  async getRealTimeAffluence() {
+    return this.request('/presences/analytics/real-time');
+  }
+  
+  async getPeakTimes() {
+    return this.request('/presences/analytics/peak-times');
+  }
+
 
   // === HEALTH & MISC ===
   async healthCheck() {
