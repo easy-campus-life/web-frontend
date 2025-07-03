@@ -1,63 +1,135 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const FeaturePreviewCard = ({ 
-  title, 
-  icon, 
-  iconBgColor, 
-  iconTextColor, 
-  to, 
-  previewData, 
-  alertType, 
-  alertText 
+const FeaturePreviewCard = ({
+  title,
+  icon,
+  iconBgColor,
+  iconTextColor,
+  to,
+  previewData,
+  alertType,
+  alertText,
+  gradient = 'from-blue-500 to-cyan-500',
+  index = 0
 }) => {
+  const getAlertConfig = (type) => {
+    const configs = {
+      info: {
+        gradient: 'from-blue-500 to-cyan-500',
+        bgColor: 'bg-blue-50',
+        textColor: 'text-blue-800',
+        borderColor: 'border-blue-200',
+        icon: '💡'
+      },
+      warning: {
+        gradient: 'from-orange-500 to-yellow-500',
+        bgColor: 'bg-orange-50',
+        textColor: 'text-orange-800',
+        borderColor: 'border-orange-200',
+        icon: '⚠️'
+      },
+      success: {
+        gradient: 'from-green-500 to-emerald-500',
+        bgColor: 'bg-green-50',
+        textColor: 'text-green-800',
+        borderColor: 'border-green-200',
+        icon: '✅'
+      },
+      danger: {
+        gradient: 'from-red-500 to-pink-500',
+        bgColor: 'bg-red-50',
+        textColor: 'text-red-800',
+        borderColor: 'border-red-200',
+        icon: '🚨'
+      },
+      default: {
+        gradient: 'from-gray-500 to-gray-600',
+        bgColor: 'bg-gray-50',
+        textColor: 'text-gray-800',
+        borderColor: 'border-gray-200',
+        icon: 'ℹ️'
+      }
+    };
+    return configs[type] || configs.default;
+  };
+
+  const alertConfig = getAlertConfig(alertType);
+
   return (
-    <Link to={to} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-300">
-      <div className="flex items-center mb-4">
-        <div className={`${iconBgColor} p-3 rounded-full mr-4`}>
-          <svg className={`w-6 h-6 ${iconTextColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            {icon}
-          </svg>
+    <Link 
+      to={to} 
+      className="group block animate-fade-in"
+      style={{ animationDelay: `${index * 100}ms` }}
+    >
+      <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-6 hover:shadow-2xl transition-all duration-500 hover:scale-105 transform relative overflow-hidden">
+        {/* Effet de brillance */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+        
+        {/* Header avec icône moderne */}
+        <div className="flex items-center mb-6 relative z-10">
+          <div className={`relative p-4 rounded-2xl mr-4 shadow-lg group-hover:scale-110 transition-transform duration-300 bg-gradient-to-r ${gradient}`}>
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              {icon}
+            </svg>
+            {/* Effet de halo */}
+            <div className={`absolute inset-0 bg-gradient-to-r ${gradient} rounded-2xl opacity-0 group-hover:opacity-30 group-hover:scale-125 transition-all duration-500 blur-lg -z-10`}></div>
+          </div>
+          <h2 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300">
+            {title}
+          </h2>
         </div>
-        <h2 className="text-xl font-semibold">{title}</h2>
-      </div>
-      
-      <p className="text-gray-600 mb-4">{previewData}</p>
-      
-      {/* Alerte ou notification */}
-      {alertText && (
-        <div className={`mt-3 p-2 rounded-md ${
-          alertType === 'info' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-          alertType === 'warning' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-          alertType === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
-          alertType === 'danger' ? 'bg-red-50 text-red-700 border border-red-200' :
-          'bg-gray-50 text-gray-700 border border-gray-200'
-        }`}>
-          <div className="flex items-center">
-            {alertType === 'info' && (
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+        
+        {/* Contenu de prévisualisation */}
+        <div className="mb-6 relative z-10">
+          <div className="text-gray-700 leading-relaxed">
+            {typeof previewData === 'string' ? (
+              <p>{previewData}</p>
+            ) : (
+              previewData
             )}
-            {alertType === 'warning' && (
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            )}
-            {alertType === 'success' && (
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            )}
-            {alertType === 'danger' && (
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            )}
-            <span className="text-sm font-medium">{alertText}</span>
           </div>
         </div>
-      )}
+        
+        {/* Alerte ou notification moderne */}
+        {alertText && (
+          <div className={`relative z-10 p-4 rounded-2xl border ${alertConfig.bgColor} ${alertConfig.borderColor} ${alertConfig.textColor} transition-all duration-300 hover:scale-105`}>
+            <div className="flex items-center">
+              <span className="text-lg mr-3">{alertConfig.icon}</span>
+              <div className="flex-1">
+                <span className="text-sm font-semibold">{alertText}</span>
+              </div>
+              {/* Pulse indicator pour les alertes importantes */}
+              {(alertType === 'warning' || alertType === 'danger') && (
+                <div className={`w-2 h-2 bg-gradient-to-r ${alertConfig.gradient} rounded-full animate-pulse ml-2`}></div>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Footer avec indicateur de navigation */}
+        <div className="flex justify-between items-center pt-4 border-t border-gray-200 relative z-10">
+          <span className="text-sm text-gray-500 font-medium">Cliquer pour ouvrir</span>
+          <div className="flex items-center text-blue-600 group-hover:text-blue-800 transition-colors duration-300">
+            <span className="text-sm font-semibold mr-1">Voir plus</span>
+            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* Styles CSS intégrés */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+      `}</style>
     </Link>
   );
 };

@@ -9,11 +9,36 @@ const LoginPage = () => {
   
   const navigate = useNavigate();
 
-  // Identifiants simulés
-  const validCredentials = {
-    email: 'etudiant@campus.fr',
-    password: 'password123'
-  };
+  // Identifiants simulés - 3 comptes au total
+  const validCredentials = [
+    {
+      email: 'admin@campus.fr',
+      password: 'admin123',
+      userData: {
+        name: 'Admin Système',
+        email: 'admin@campus.fr',
+        role: 'admin'
+      }
+    },
+    {
+      email: 'etudiant@campus.fr',
+      password: 'password123',
+      userData: {
+        name: 'Jean Dupont',
+        email: 'etudiant@campus.fr',
+        role: 'etudiant'  
+      }
+    },
+    {
+      email: 'student@campus.fr',
+      password: 'student123',
+      userData: {
+        name: 'Marie Martin',
+        email: 'student@campus.fr',
+        role: 'etudiant'
+      }
+    }
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -22,19 +47,24 @@ const LoginPage = () => {
 
     // Simulation d'une requête d'authentification
     setTimeout(() => {
-      if (email === validCredentials.email && password === validCredentials.password) {
+      // Rechercher les identifiants correspondants
+      const validUser = validCredentials.find(
+        cred => cred.email === email && cred.password === password
+      );
+
+      if (validUser) {
         // Stockage d'une information d'authentification dans le localStorage
         localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('user', JSON.stringify({ 
-          name: 'Jean Dupont',
-          email: email,
-          role: 'Étudiant'
-        }));
+        localStorage.setItem('user', JSON.stringify(validUser.userData));
         
-        // Redirection vers la page d'accueil
-        navigate('/');
+        // Redirection selon le rôle
+        if (validUser.userData.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
-        setError('Identifiants incorrects. Essayez avec etudiant@campus.fr / password123');
+        setError('Identifiants incorrects. Essayez avec les comptes de test ci-dessous.');
       }
       setLoading(false);
     }, 1000);
@@ -51,7 +81,7 @@ const LoginPage = () => {
             EasyCampus
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Connectez-vous à votre espace étudiant
+            Connectez-vous à votre espace
           </p>
         </div>
         
@@ -141,10 +171,36 @@ const LoginPage = () => {
         </form>
         
         <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
-            Pour tester, utilisez : <br />
-            <span className="font-semibold">etudiant@campus.fr / password123</span>
-          </p>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-600 mb-2 font-medium">Comptes de test :</p>
+            
+            {/* Compte Admin */}
+            <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded">
+              <p className="text-xs text-red-800 font-semibold mb-1">👑 Administrateur</p>
+              <p className="text-xs text-gray-700">
+                <span className="font-mono">admin@campus.fr</span><br />
+                <span className="font-mono">admin123</span>
+              </p>
+            </div>
+            
+            {/* Compte Étudiant 1 */}
+            <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded">
+              <p className="text-xs text-blue-800 font-semibold mb-1">🎓 Étudiant</p>
+              <p className="text-xs text-gray-700">
+                <span className="font-mono">etudiant@campus.fr</span><br />
+                <span className="font-mono">password123</span>
+              </p>
+            </div>
+            
+            {/* Compte Étudiant 2 */}
+            <div className="p-2 bg-blue-50 border border-blue-200 rounded">
+              <p className="text-xs text-blue-800 font-semibold mb-1">🎓 Étudiant</p>
+              <p className="text-xs text-gray-700">
+                <span className="font-mono">student@campus.fr</span><br />
+                <span className="font-mono">student123</span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

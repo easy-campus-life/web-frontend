@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import FeaturePreviewCard from '../../components/FeaturePreviewCard';
 
 const HomePage = () => {
-  // État pour les données dynamiques des fonctionnalités
   const [forumTopics, setForumTopics] = useState([
     {
       id: 1,
@@ -16,7 +13,7 @@ const HomePage = () => {
     },
     {
       id: 2,
-      title: "Conseils pour stage en cybersecurité",
+      title: "Conseils pour stage en cybersécurité",
       author: "Emma Moreau",
       date: "2025-07-01",
       replies: 15,
@@ -94,6 +91,7 @@ const HomePage = () => {
       badgeColor: "red"
     }
   ]);
+  
   const [affluenceData, setAffluenceData] = useState({
     cafeteria: { niveau: 'élevée', occupation: '85%', attente: '15 min' },
     bibliotheque: { niveau: 'moyenne', occupation: '60%', places: '45 disponibles' },
@@ -170,320 +168,333 @@ const HomePage = () => {
       status: 'Planifié'
     }
   ]);
-  
-  // Simuler des mises à jour en temps réel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Simuler des changements d'affluence aléatoires
-      const levels = ['faible', 'moyenne', 'élevée'];
-      const getRandomOccupation = (niveau) => {
-        switch(niveau) {
-          case 'faible': return `${Math.floor(Math.random() * 30 + 10)}%`;
-          case 'moyenne': return `${Math.floor(Math.random() * 20 + 50)}%`;
-          case 'élevée': return `${Math.floor(Math.random() * 15 + 75)}%`;
-          default: return '50%';
-        }
-      };
-      
-      const getRandomPlaces = (niveau, total) => {
-        switch(niveau) {
-          case 'faible': return `${Math.floor(total * 0.7)} disponibles`;
-          case 'moyenne': return `${Math.floor(total * 0.4)} disponibles`;
-          case 'élevée': return `${Math.floor(total * 0.1)} disponibles`;
-          default: return `${Math.floor(total * 0.5)} disponibles`;
-        }
-      };
-      
-      const getRandomAttente = (niveau) => {
-        switch(niveau) {
-          case 'faible': return '5 min';
-          case 'moyenne': return '10 min';
-          case 'élevée': return `${Math.floor(Math.random() * 10 + 15)} min`;
-          default: return '10 min';
-        }
-      };
-      
-      const cafetNiveau = levels[Math.floor(Math.random() * 3)];
-      const biblioNiveau = levels[Math.floor(Math.random() * 3)];
-      const labNiveau = levels[Math.floor(Math.random() * 3)];
-      const salleNiveau = levels[Math.floor(Math.random() * 3)];
-      
-      setAffluenceData({
-        cafeteria: { 
-          niveau: cafetNiveau, 
-          occupation: getRandomOccupation(cafetNiveau),
-          attente: getRandomAttente(cafetNiveau)
-        },
-        bibliotheque: { 
-          niveau: biblioNiveau, 
-          occupation: getRandomOccupation(biblioNiveau),
-          places: getRandomPlaces(biblioNiveau, 120)
-        },
-        labInfo: { 
-          niveau: labNiveau, 
-          occupation: getRandomOccupation(labNiveau),
-          places: getRandomPlaces(labNiveau, 40)
-        },
-        salleEtude: { 
-          niveau: salleNiveau, 
-          occupation: getRandomOccupation(salleNiveau),
-          places: getRandomPlaces(salleNiveau, 50)
-        }
-      });
-    }, 30000); // Mise à jour toutes les 30 secondes
-    
-    return () => clearInterval(interval);
-  }, []);
-  
-  // Générer des alertes basées sur les données
-  const getAffluenceAlert = () => {
-    if (affluenceData.cafeteria.niveau === 'élevée') {
-      return { type: 'warning', text: `Cafétéria très fréquentée (${affluenceData.cafeteria.occupation}) - Attente: ${affluenceData.cafeteria.attente}` };
-    } else if (affluenceData.bibliotheque.niveau === 'élevée') {
-      return { type: 'warning', text: `Bibliothèque presque complète - ${affluenceData.bibliotheque.places}` };
-    } else if (affluenceData.salleEtude.niveau === 'élevée') {
-      return { type: 'warning', text: `Salles d'étude occupées à ${affluenceData.salleEtude.occupation}` };
-    } else if (affluenceData.labInfo.niveau === 'faible') {
-      return { type: 'success', text: `Laboratoire informatique disponible - ${affluenceData.labInfo.places}` };
-    }
-    return null;
+
+  const getCategoryConfig = (category) => {
+    const configs = {
+      'Développement': { gradient: 'from-blue-500 to-cyan-500', color: 'bg-blue-100 text-blue-800', icon: '💻' },
+      'Carrière': { gradient: 'from-green-500 to-emerald-500', color: 'bg-green-100 text-green-800', icon: '🚀' },
+      'Ressources': { gradient: 'from-purple-500 to-pink-500', color: 'bg-purple-100 text-purple-800', icon: '📚' },
+      'Événements': { gradient: 'from-orange-500 to-red-500', color: 'bg-orange-100 text-orange-800', icon: '🎉' },
+      'Campus': { gradient: 'from-indigo-500 to-purple-500', color: 'bg-indigo-100 text-indigo-800', icon: '🏫' }
+    };
+    return configs[category] || { gradient: 'from-gray-500 to-gray-600', color: 'bg-gray-100 text-gray-800', icon: '💬' };
   };
-  
-  const getEventsAlert = () => {
-    const today = new Date();
-    const nextEvent = upcomingEvents.find(event => new Date(event.date) > today);
-    
-    if (nextEvent) {
-      const daysUntil = Math.ceil((new Date(nextEvent.date) - today) / (1000 * 60 * 60 * 24));
-      if (daysUntil <= 3) {
-        return { type: 'info', text: `${nextEvent.title} dans ${daysUntil} jour${daysUntil > 1 ? 's' : ''}` };
-      }
-    }
-    return null;
+
+  const getNewsBadgeColor = (badgeColor) => {
+    const colors = {
+      'blue': 'bg-blue-100 text-blue-800',
+      'green': 'bg-green-100 text-green-800',
+      'yellow': 'bg-yellow-100 text-yellow-800',
+      'red': 'bg-red-100 text-red-800'
+    };
+    return colors[badgeColor] || 'bg-gray-100 text-gray-800';
   };
-  
-  const getMentorAlert = () => {
-    const pendingRequests = mentorRequests.filter(req => req.status === 'En attente').length;
-    const urgentRequests = mentorRequests.filter(req => req.urgency === 'Élevée' && req.status === 'En attente').length;
-    
-    if (urgentRequests > 0) {
-      return { type: 'warning', text: `${urgentRequests} demande${urgentRequests > 1 ? 's' : ''} urgente${urgentRequests > 1 ? 's' : ''}` };
-    } else if (pendingRequests > 0) {
-      return { type: 'info', text: `${pendingRequests} demande${pendingRequests > 1 ? 's' : ''} en attente` };
+
+  const getAffluenceColor = (niveau) => {
+    switch (niveau) {
+      case 'élevée': return 'bg-red-100 text-red-800';
+      case 'moyenne': return 'bg-yellow-100 text-yellow-800';
+      case 'faible': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-    return null;
   };
-  
+
   return (
-    <div className="bg-gradient-to-b from-white to-gray-50 min-h-screen">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Ton campus, ta vie étudiante
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      {/* Header moderne et simple */}
+      <div className="bg-white/80 backdrop-blur-xl shadow-lg border-b border-white/20">
+        <div className="container mx-auto px-6 py-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+              Campus ESTIAM
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              Tout ce dont tu as besoin pour réussir et t'épanouir à l'ÉSTIAM
+            <p className="text-xl text-gray-600">
+              Votre hub étudiant centralisé
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/forum" className="bg-white text-purple-600 hover:bg-blue-50 font-medium px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
-                Rejoindre les discussions
-              </Link>
-              <Link to="/social" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-purple-600 font-medium px-6 py-3 rounded-full transition-all">
-                Découvrir les événements
-              </Link>
-            </div>
           </div>
         </div>
-        
-        {/* Wave Divider */}
-        <div className="w-full">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" className="w-full h-auto -mb-1">
-            <path fill="#f9fafb" fillOpacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-          </svg>
-        </div>
       </div>
-      
-      {/* Stories Section - Horizontal Scrolling Events */}
-      <div className="container mx-auto px-4 py-8 overflow-hidden">
-        <h2 className="text-xl font-semibold mb-4 px-2">À ne pas manquer 🔥</h2>
-        <div className="flex overflow-x-auto pb-4 gap-4 px-2 scrollbar-hide">
-          {upcomingEvents.map(event => (
-            <div key={event.id} className="flex-shrink-0 w-36 md:w-44">
-              <div className="bg-gradient-to-b from-blue-500 to-purple-600 h-48 md:h-56 rounded-xl relative overflow-hidden shadow-md">
-                <div className="absolute inset-0 flex flex-col justify-end p-3 bg-gradient-to-t from-black/70 to-transparent text-white">
-                  <p className="font-bold truncate">{event.title}</p>
-                  <p className="text-xs text-white/80">{new Date(event.date).toLocaleDateString('fr-FR')}</p>
-                </div>
-                <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm rounded-full px-2 py-1 text-xs text-white">
-                  {event.participants}/{event.maxParticipants}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      <div className="container mx-auto px-4 pb-12">
-        <div className="flex flex-col md:flex-row gap-6">
-        {/* Aside avec les cartes de fonctionnalités */}
-        <aside className="md:w-1/3 lg:w-1/4 space-y-6">
-        <FeaturePreviewCard
-          title="Affluence"
-          icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />}
-          iconBgColor="bg-blue-100"
-          iconTextColor="text-blue-600"
-          to="/affluence"
-          previewData={
-            <div className="space-y-1 text-sm">
-              <div><span className="font-semibold">Cafétéria:</span> {affluenceData.cafeteria.occupation} ({affluenceData.cafeteria.niveau})</div>
-              <div><span className="font-semibold">Bibliothèque:</span> {affluenceData.bibliotheque.occupation} - {affluenceData.bibliotheque.places}</div>
-              <div><span className="font-semibold">Lab Info:</span> {affluenceData.labInfo.places}</div>
-              <div><span className="font-semibold">Salles d'étude:</span> {affluenceData.salleEtude.places}</div>
-            </div>
-          }
-          alertType={getAffluenceAlert()?.type}
-          alertText={getAffluenceAlert()?.text}
-        />
-        
 
-        
-        <FeaturePreviewCard
-          title="Mentorat Technique"
-          icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />}
-          iconBgColor="bg-red-100"
-          iconTextColor="text-red-600"
-          to="/mentoring"
-          previewData={
-            <div className="space-y-1 text-sm">
-              <div><span className="font-semibold">Demandes en attente:</span> {mentorRequests.filter(req => req.status === 'En attente').length}</div>
-              <div><span className="font-semibold">Sujets populaires:</span> React, NoSQL, Sécurité</div>
-              <div><span className="font-semibold">Prochaine session:</span> {mentorRequests.find(req => req.status === 'Planifié')?.date}</div>
-            </div>
-          }
-          alertType={getMentorAlert()?.type}
-          alertText={getMentorAlert()?.text}
-        />
-        
-        <FeaturePreviewCard
-          title="Événements Campus"
-          icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />}
-          iconBgColor="bg-blue-100"
-          iconTextColor="text-blue-600"
-          to="/social"
-          previewData={
-            <div className="space-y-1 text-sm">
-              <div><span className="font-semibold">Prochain événement:</span> {upcomingEvents.sort((a, b) => new Date(a.date) - new Date(b.date))[0].title}</div>
-              <div><span className="font-semibold">Date:</span> {new Date(upcomingEvents.sort((a, b) => new Date(a.date) - new Date(b.date))[0].date).toLocaleDateString('fr-FR')}</div>
-              <div><span className="font-semibold">Total:</span> {upcomingEvents.length} événements à venir</div>
-              <div><span className="font-semibold">Participants:</span> {upcomingEvents.reduce((sum, event) => sum + event.participants, 0)} inscrits</div>
-            </div>
-          }
-          alertType={getEventsAlert()?.type}
-          alertText={getEventsAlert()?.text}
-        />
-        
-        <FeaturePreviewCard
-          title="Forum Étudiants"
-          icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />}
-          iconBgColor="bg-purple-100"
-          iconTextColor="text-purple-600"
-          to="/forum"
-          previewData={
-            <div className="space-y-1 text-sm">
-              <div><span className="font-semibold">Sujets récents:</span> {forumTopics.filter(topic => topic.date === "2025-07-02").length} aujourd'hui</div>
-              <div><span className="font-semibold">Plus actif:</span> {forumTopics.sort((a, b) => b.replies - a.replies)[0].title.substring(0, 20)}...</div>
-              <div><span className="font-semibold">Catégories populaires:</span> Développement, Carrière</div>
-              <div><span className="font-semibold">Total:</span> {forumTopics.reduce((sum, topic) => sum + topic.replies, 0)} réponses</div>
-            </div>
-          }
-          alertType="info"
-          alertText={`${forumTopics.filter(topic => topic.date === "2025-07-02").length} nouveaux sujets aujourd'hui`}
-        />
-
-        </aside>
-        
-        {/* Contenu principal */}
-        <main className="md:w-2/3 lg:w-3/4">
-          {/* En-tête de section */}
-          <div className="flex justify-between items-center mb-4 px-2">
-            <div className="flex items-center">
-              <svg className="w-6 h-6 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path>
+      <div className="container mx-auto px-6 py-8">
+        {/* Stories Section moderne */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent flex items-center">
+              <span className="mr-3 text-2xl">🔥</span>
+              À ne pas manquer
+            </h2>
+            <button className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center group">
+              Voir tous les événements
+              <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
               </svg>
-              <h2 className="text-2xl font-bold">Discussions</h2>
-            </div>
-            <Link to="/forum" className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-full flex items-center transition-colors">
-              Voir tout
-              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </Link>
+            </button>
           </div>
           
-          {/* Liste des discussions */}
-          <div className="space-y-3">
-            {forumTopics.slice(0, 5).map(topic => (
-              <div key={topic.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <Link to="/forum" className="block">
-                  <div className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-semibold text-lg text-gray-900">{topic.title}</h3>
-                      <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-1 rounded-full">{topic.category}</span>
-                    </div>
-                    
-                    <div className="flex items-center mb-3">
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-500 flex items-center justify-center text-white font-medium text-sm mr-2">
-                        {topic.author.charAt(0).toUpperCase()}
+          <div className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide">
+            {upcomingEvents.map((event, index) => (
+              <div key={event.id} className="flex-shrink-0 w-64 group cursor-pointer">
+                <div className="h-72 bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 rounded-3xl relative overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                  
+                  <div className="absolute inset-0 flex flex-col justify-between p-6 text-white">
+                    <div className="flex justify-between items-start">
+                      <div className="bg-white/20 backdrop-blur-sm rounded-xl px-3 py-1.5 text-sm font-medium">
+                        {new Date(event.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{topic.author}</p>
-                        <p className="text-xs text-gray-500">{new Date(topic.date).toLocaleDateString('fr-FR')}</p>
+                      <div className="bg-green-500/90 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-semibold">
+                        {event.participants}/{event.maxParticipants}
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between text-sm text-gray-500 mt-2 pt-2 border-t border-gray-100">
-                      <div className="flex space-x-4">
-                        <span className="flex items-center">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                          </svg>
-                          {topic.replies}
-                        </span>
-                        <span className="flex items-center">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                          </svg>
-                          {topic.views}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-purple-600 font-medium hover:underline">Participer</span>
+                    <div>
+                      <h3 className="font-bold text-lg mb-2">{event.title}</h3>
+                      <p className="text-sm text-white/90 mb-3 line-clamp-2">{event.description}</p>
+                      <div className="flex items-center text-sm text-white/80">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {event.time}
                       </div>
                     </div>
                   </div>
-                </Link>
+                </div>
               </div>
             ))}
-            
-            {/* Bouton créer une discussion */}
-            <div className="mt-4 text-center">
-              <Link to="/forum/new" className="inline-flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                Créer une discussion
-              </Link>
-            </div>
           </div>
-        </main>
+        </div>
+        
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar avec les cartes de fonctionnalités */}
+          <aside className="lg:w-1/3 space-y-6">
+            {/* Card Affluence */}
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/20 hover:shadow-2xl transition-shadow duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg">
+                    📊
+                  </div>
+                  <h3 className="ml-3 text-lg font-bold text-gray-800">Affluence Campus</h3>
+                </div>
+                <button className="text-blue-600 hover:text-blue-800 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center p-3 bg-blue-50/50 rounded-xl">
+                  <span className="font-medium">Cafétéria</span>
+                  <span className={`font-bold px-2 py-1 rounded-full text-xs ${getAffluenceColor(affluenceData.cafeteria.niveau)}`}>
+                    {affluenceData.cafeteria.occupation}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-blue-50/50 rounded-xl">
+                  <span className="font-medium">Bibliothèque</span>
+                  <span className="text-gray-700">{affluenceData.bibliotheque.places}</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-blue-50/50 rounded-xl">
+                  <span className="font-medium">Lab Info</span>
+                  <span className="text-gray-700">{affluenceData.labInfo.places}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card Mentorat */}
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/20 hover:shadow-2xl transition-shadow duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg">
+                    🎓
+                  </div>
+                  <h3 className="ml-3 text-lg font-bold text-gray-800">Mentorat</h3>
+                </div>
+                <button className="text-purple-600 hover:text-purple-800 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between p-3 bg-purple-50/50 rounded-xl">
+                  <span className="font-medium">En attente</span>
+                  <span className="font-bold text-purple-600">{mentorRequests.filter(req => req.status === 'En attente').length}</span>
+                </div>
+                <div className="text-gray-600">
+                  <div><strong>Sujets populaires:</strong> React, NoSQL, Sécurité</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card Événements */}
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/20 hover:shadow-2xl transition-shadow duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg">
+                    🎉
+                  </div>
+                  <h3 className="ml-3 text-lg font-bold text-gray-800">Événements</h3>
+                </div>
+                <button className="text-green-600 hover:text-green-800 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-3 text-sm">
+                <div className="p-3 bg-green-50/50 rounded-xl">
+                  <div className="font-medium">Prochain: {upcomingEvents[0]?.title}</div>
+                  <div className="text-gray-600">{new Date(upcomingEvents[0]?.date).toLocaleDateString('fr-FR')}</div>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Total événements</span>
+                  <span className="font-bold">{upcomingEvents.length}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actualités Campus */}
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/20 hover:shadow-2xl transition-shadow duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg">
+                    📢
+                  </div>
+                  <h3 className="ml-3 text-lg font-bold text-gray-800">Actualités</h3>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                {campusNews.slice(0, 3).map((news) => (
+                  <div key={news.id} className="border-l-4 border-orange-500 pl-3 py-2">
+                    <div className="flex items-start justify-between mb-1">
+                      <h4 className="font-medium text-gray-900 text-sm">{news.title}</h4>
+                      <span className={`text-xs px-2 py-1 rounded-full ml-2 ${getNewsBadgeColor(news.badgeColor)}`}>
+                        {news.type}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-1">{news.content}</p>
+                    <span className="text-xs text-gray-500">{new Date(news.date).toLocaleDateString('fr-FR')}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
+          
+          {/* Contenu principal */}
+          <main className="lg:w-2/3">
+            {/* Header des discussions */}
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white mr-3">
+                  💬
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                  Discussions Récentes
+                </h2>
+              </div>
+              <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                Voir tout
+                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Liste des discussions */}
+            <div className="space-y-4">
+              {forumTopics.slice(0, 5).map((topic, index) => {
+                const categoryConfig = getCategoryConfig(topic.category);
+                
+                return (
+                  <div key={topic.id} className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300 hover:scale-105 transform">
+                    <div className="block p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="font-bold text-lg text-gray-900 hover:text-purple-600 transition-colors duration-200 flex-1 pr-4">
+                          {topic.title}
+                        </h3>
+                        <div className={`bg-gradient-to-r ${categoryConfig.gradient} text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center space-x-1 shadow-lg`}>
+                          <span>{categoryConfig.icon}</span>
+                          <span>{topic.category}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center mb-4">
+                        <div className={`h-10 w-10 rounded-2xl bg-gradient-to-br ${categoryConfig.gradient} flex items-center justify-center text-white font-bold text-sm mr-3 shadow-lg`}>
+                          {topic.author.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">{topic.author}</p>
+                          <p className="text-xs text-gray-500">{new Date(topic.date).toLocaleDateString('fr-FR', { 
+                            day: 'numeric', 
+                            month: 'long',
+                            year: 'numeric'
+                          })}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-sm text-gray-600 pt-4 border-t border-gray-200">
+                        <div className="flex space-x-6">
+                          <span className="flex items-center bg-purple-50/50 px-3 py-1.5 rounded-xl">
+                            <svg className="w-4 h-4 mr-1.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <span className="font-medium">{topic.replies}</span>
+                          </span>
+                          <span className="flex items-center bg-blue-50/50 px-3 py-1.5 rounded-xl">
+                            <svg className="w-4 h-4 mr-1.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <span className="font-medium">{topic.views}</span>
+                          </span>
+                        </div>
+                        <div className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent font-bold">
+                          Participer →
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* Bouton créer une discussion */}
+              <div className="mt-8 text-center">
+                <button className="inline-flex items-center justify-center bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white font-semibold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:scale-105">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <span>Créer une discussion</span>
+                </button>
+              </div>
+            </div>
+          </main>
         </div>
       </div>
+
+      {/* CSS réduit */}
+      <style jsx>{`
+        .line-clamp-2 {
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+        }
+        
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };
-
 
 export default HomePage;
