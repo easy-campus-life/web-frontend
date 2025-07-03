@@ -10,11 +10,13 @@ import HomePage from './features/home/HomePage';
 import AffluencePage from './features/affluence/AffluencePage';
 import ChatPage from './features/chat/ChatPage';
 import SocialPage from './features/social/SocialPage';
+import EventDetailPage from './features/social/EventDetailPage';
 import UserPage from './features/user/UserPage';
 import LoginPage from './features/auth/LoginPage';
 import ProtectedRoute from './features/auth/ProtectedRoute';
 import MentoringPage from './features/mentoring/MentoringPage';
-import ForumPage from './features/forum/ForumPage';
+import MentoringDetailPage from './features/mentoring/MentoringDetailPage';
+// Forum page supprimée
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -28,7 +30,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Route de connexion accessible à tous */}
+        {/* Route d'authentification accessible à tous */}
         <Route path="/login" element={<LoginPage />} />
         
         {/* Routes protégées nécessitant une authentification */}
@@ -41,8 +43,10 @@ function App() {
           <Route path="affluence" element={<AffluencePage />} />
           <Route path="chat" element={<ChatPage />} />
           <Route path="social" element={<SocialPage />} />
+          <Route path="social/event/:eventId" element={<EventDetailPage />} />
           <Route path="mentoring" element={<MentoringPage />} />
-          <Route path="forum" element={<ForumPage />} />
+          <Route path="mentoring/session/:mentoringId" element={<MentoringDetailPage />} />
+          {/* Route forum supprimée */}
           <Route path="user" element={<UserPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
