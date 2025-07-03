@@ -22,7 +22,7 @@ const AffluencePage = () => {
             occupation: `${occupancyData.occupancy_percentage}%`,
             status: occupancyData.occupancy_percentage > 70 ? 'high' : 
                    occupancyData.occupancy_percentage > 40 ? 'medium' : 'low',
-            places: `${occupancyData.available_places} places disponibles`
+            places: `${occupancyData.available_seats} places disponibles`
           };
         } catch (err) {
           console.error(`Erreur lors de la récupération de l'occupation pour la salle ${classroom.id}:`, err);

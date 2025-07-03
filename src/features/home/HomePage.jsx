@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import FeaturePreviewCard from '../../components/FeaturePreviewCard';
 import apiService from '../../services/apiService';
 
 const HomePage = () => {
-  // État pour les données dynamiques des fonctionnalités
+  // État pour les données dynamiques des mentors
   const [mentors, setMentors] = useState([]);
   const [loadingMentors, setLoadingMentors] = useState(true);
-  
   
   // Fonction pour générer les initiales à partir d'un nom
   const getInitials = (name) => {
@@ -31,6 +29,44 @@ const HomePage = () => {
       'bg-pink-200 text-pink-800'
     ];
     return colors[id % colors.length];
+  };
+  
+
+  
+  // Fonction pour obtenir une image en fonction de la catégorie de l'événement
+  const getEventImage = (category, title) => {
+    // Images par défaut pour chaque catégorie
+    const categoryImages = {
+      'Musique': 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Culture': 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Gastronomie': 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Sport': 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Marché': 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Cinéma': 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Écologie': 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Gaming': 'https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Exposition': 'https://images.unsplash.com/photo-1531058020387-3be344556be6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Fête nationale': 'https://images.unsplash.com/photo-1551803091-e20673f15770?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Atelier': 'https://images.unsplash.com/photo-1544928147-79a2dbc1f669?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Technologie': 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Art': 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Littérature': 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Business': 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Five': 'https://images.unsplash.com/photo-1575444758702-4a6b9222336e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+      'Jeux de Société': 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'
+    };
+    
+    // Images spécifiques pour certains mots-clés dans le titre
+    if (title.toLowerCase().includes('festival')) {
+      return 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80';
+    } else if (title.toLowerCase().includes('vélo')) {
+      return 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80';
+    } else if (title.toLowerCase().includes('marathon')) {
+      return 'https://images.unsplash.com/photo-1530947443747-bcb41920bdaa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80';
+    }
+    
+    // Retourne l'image de la catégorie ou une image par défaut si la catégorie n'existe pas
+    return categoryImages[category] || 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80';
   };
   
   // Charger les données des mentors
@@ -65,112 +101,15 @@ const HomePage = () => {
         if (apiMentors.length >= 3) {
           setMentors(apiMentors.slice(0, 6)); // Limiter à 6 mentors
         } else {
-          // Sinon, compléter avec des mentors par défaut pour avoir au moins 3 mentors
-          const defaultMentors = [
-            {
-              id: 101,
-              name: 'Sophie Dubois',
-              level: 'Expert',
-              specialty: 'Développement Web Frontend',
-              rating: '4.8'
-            },
-            {
-              id: 102,
-              name: 'Thomas Martin',
-              level: 'Avancé',
-              specialty: 'Intelligence Artificielle',
-              rating: '4.5'
-            },
-            {
-              id: 103,
-              name: 'Emma Laurent',
-              level: 'Expert',
-              specialty: 'Cybersécurité',
-              rating: '4.9'
-            },
-            {
-              id: 104,
-              name: 'Lucas Bernard',
-              level: 'Intermédiaire',
-              specialty: 'Développement Mobile',
-              rating: '4.6'
-            },
-            {
-              id: 105,
-              name: 'Camille Moreau',
-              level: 'Expert',
-              specialty: 'Data Science',
-              rating: '4.7'
-            },
-            {
-              id: 106,
-              name: 'Alexandre Petit',
-              level: 'Avancé',
-              specialty: 'DevOps',
-              rating: '4.4'
-            }
-          ];
-          
-          // Combiner les mentors de l'API avec les mentors par défaut
-          const combinedMentors = [...apiMentors];
-          
-          // Ajouter des mentors par défaut jusqu'à avoir au moins 3 mentors
-          for (let i = 0; combinedMentors.length < 3 && i < defaultMentors.length; i++) {
-            combinedMentors.push(defaultMentors[i]);
-          }
-          
-          setMentors(combinedMentors.slice(0, 6)); // Limiter à 6 mentors
+          // Utiliser uniquement les mentors de l'API
+          setMentors(apiMentors.slice(0, 6)); // Limiter à 6 mentors
         }
       } catch (err) {
         console.error('Erreur lors du chargement des mentors:', err);
         
-        // En cas d'erreur, afficher 6 mentors par défaut
-        const defaultMentors = [
-          {
-            id: 101,
-            name: 'Sophie Dubois',
-            level: 'Expert',
-            specialty: 'Développement Web Frontend',
-            rating: '4.8'
-          },
-          {
-            id: 102,
-            name: 'Thomas Martin',
-            level: 'Avancé',
-            specialty: 'Intelligence Artificielle',
-            rating: '4.5'
-          },
-          {
-            id: 103,
-            name: 'Emma Laurent',
-            level: 'Expert',
-            specialty: 'Cybersécurité',
-            rating: '4.9'
-          },
-          {
-            id: 104,
-            name: 'Lucas Bernard',
-            level: 'Intermédiaire',
-            specialty: 'Développement Mobile',
-            rating: '4.6'
-          },
-          {
-            id: 105,
-            name: 'Camille Moreau',
-            level: 'Expert',
-            specialty: 'Data Science',
-            rating: '4.7'
-          },
-          {
-            id: 106,
-            name: 'Alexandre Petit',
-            level: 'Avancé',
-            specialty: 'DevOps',
-            rating: '4.4'
-          }
-        ];
-        
-        setMentors(defaultMentors);
+        // En cas d'erreur, afficher un message d'erreur et laisser la liste vide
+        console.error('Impossible de charger les mentors depuis l\'API');
+        setMentors([]);
       } finally {
         setLoadingMentors(false);
       }
@@ -179,70 +118,41 @@ const HomePage = () => {
     fetchMentors();
   }, []);
   
-  const [campusNews, setCampusNews] = useState([
-    {
-      id: 1,
-      title: "Ouverture de la nouvelle bibliothèque",
-      content: "La nouvelle bibliothèque du campus ouvre ses portes ce lundi.",
-      date: "2025-07-02",
-      type: "Nouveau",
-      badgeColor: "blue"
-    },
-    {
-      id: 2,
-      title: "Modification des horaires du restaurant universitaire",
-      content: "Le restaurant sera désormais ouvert de 11h30 à 14h30.",
-      date: "2025-07-01",
-      type: "Info",
-      badgeColor: "green"
-    },
-    {
-      id: 3,
-      title: "Maintenance réseau prévue",
-      content: "Une maintenance du réseau est prévue le 5 juillet de 22h à 2h du matin.",
-      date: "2025-07-02",
-      type: "Important",
-      badgeColor: "yellow"
-    },
-    {
-      id: 4,
-      title: "Nouveau partenariat avec Microsoft",
-      content: "Accès gratuit à Microsoft Azure pour tous les étudiants.",
-      date: "2025-06-30",
-      type: "Nouveau",
-      badgeColor: "blue"
-    },
-    {
-      id: 5,
-      title: "Fermeture exceptionnelle du parking B",
-      content: "Le parking B sera fermé le 4 juillet pour travaux.",
-      date: "2025-07-01",
-      type: "Alerte",
-      badgeColor: "red"
-    }
-  ]);
-  const [affluenceData, setAffluenceData] = useState({
-    cafeteria: { niveau: 'moyenne', occupation: '50%', attente: '5 min' },
-    bibliotheque: { niveau: 'moyenne', occupation: '50%', places: '50 disponibles' },
-    labInfo: { niveau: 'faible', occupation: '30%', places: '30 disponibles' },
-    salleEtude: { niveau: 'moyenne', occupation: '50%', places: '20 disponibles' }
-  });
+  // Charger les données des événements depuis l'API
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        // Utiliser getEvents pour avoir les mêmes événements que sur la page des événements
+        const data = await apiService.getEvents();
+        
+        if (data && data.length > 0) {
+          // Tri des événements par date pour afficher les plus proches
+          const sortedEvents = [...data].sort((a, b) => {
+            const dateA = new Date(a.date_start || '2099-01-01');
+            const dateB = new Date(b.date_start || '2099-01-01');
+            return dateA - dateB;
+          });
+          
+          // Limiter à 5 événements
+          setUpcomingEvents(sortedEvents.slice(0, 5));
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des événements:', error);
+      }
+    };
+    
+    fetchEvents();
+  }, []);
   
   // Charger les données d'affluence depuis l'API
   useEffect(() => {
     const fetchAffluenceData = async () => {
       try {
-        const overview = await apiService.getAffluenceOverview();
-        const realTime = await apiService.getRealTimeAffluence();
-        
-        // Mise à jour des données d'affluence avec les données de l'API
-        if (overview && realTime) {
-          setAffluenceData({
-            cafeteria: realTime.cafeteria || affluenceData.cafeteria,
-            bibliotheque: realTime.bibliotheque || affluenceData.bibliotheque,
-            labInfo: realTime.labInfo || affluenceData.labInfo,
-            salleEtude: realTime.salleEtude || affluenceData.salleEtude
-          });
+        const data = await apiService.getAffluenceData();
+        if (data) {
+          setAffluenceData(data);
         }
       } catch (error) {
         console.error('Erreur lors du chargement des données d\'affluence:', error);
@@ -250,121 +160,13 @@ const HomePage = () => {
     };
     
     fetchAffluenceData();
-    
-    // Rafraîchir les données toutes les 5 minutes
-    const interval = setInterval(fetchAffluenceData, 5 * 60 * 1000);
-    return () => clearInterval(interval);
   }, []);
   
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [campusNews, setCampusNews] = useState([]);
   
-  // Charger les données des événements depuis l'API
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        // Utiliser getEvents pour avoir les mêmes événements que sur la page des événements
-        const data = await apiService.getEvents();
-        
-        // Ajouter les 3 événements supplémentaires avec les mêmes propriétés que celles utilisées dans l'API
-        const additionalEvents = [
-          {
-            id: 5,
-            title: 'Soirée d\'intégration',
-            date: '2025-09-15',
-            time: '20h00',
-            place: 'Campus Principal', // Utilisation de 'place' au lieu de 'location' pour correspondre à l'API
-            attendance: 156, // Utilisation de 'attendance' au lieu de 'participants' pour correspondre à l'API
-            max_attendance: 200, // Utilisation de 'max_attendance' au lieu de 'maxParticipants' pour correspondre à l'API
-            description: 'Venez rencontrer les nouveaux étudiants lors de notre soirée d\'intégration annuelle.',
-            category: 'Social',
-            date_start: '2025-09-15T20:00:00',
-            date_end: '2025-09-15T23:59:00'
-          },
-          {
-            id: 6,
-            title: 'Hackathon Innovation',
-            date: '2025-09-22',
-            time: '09h00',
-            place: 'Bâtiment Technologie',
-            attendance: 87,
-            max_attendance: 100,
-            description: '48 heures pour créer une solution innovante en équipe.',
-            category: 'Tech',
-            date_start: '2025-09-22T09:00:00',
-            date_end: '2025-09-24T09:00:00'
-          },
-          {
-            id: 7,
-            title: 'Conférence IA & Éthique',
-            date: '2025-09-30',
-            time: '14h00',
-            place: 'Amphithéâtre Central',
-            attendance: 42,
-            max_attendance: 120,
-            description: 'Discussion sur les implications éthiques de l\'intelligence artificielle.',
-            category: 'Conférence',
-            date_start: '2025-09-30T14:00:00',
-            date_end: '2025-09-30T16:00:00'
-          }
-        ];
-        
-        // Combiner les données de l'API avec les événements supplémentaires
-        const combinedEvents = [...data, ...additionalEvents];
-        
-        // Limiter l'affichage à 7 événements pour la page d'accueil
-        setUpcomingEvents(combinedEvents.slice(0, 7));
-      } catch (error) {
-        console.error('Erreur lors du chargement des événements:', error);
-        
-        // En cas d'erreur, afficher au moins les 3 événements supplémentaires
-        const additionalEvents = [
-          {
-            id: 5,
-            title: 'Soirée d\'intégration',
-            date: '2025-09-15',
-            time: '20h00',
-            place: 'Campus Principal',
-            attendance: 156,
-            max_attendance: 200,
-            description: 'Venez rencontrer les nouveaux étudiants lors de notre soirée d\'intégration annuelle.',
-            category: 'Social',
-            date_start: '2025-09-15T20:00:00',
-            date_end: '2025-09-15T23:59:00'
-          },
-          {
-            id: 6,
-            title: 'Hackathon Innovation',
-            date: '2025-09-22',
-            time: '09h00',
-            place: 'Bâtiment Technologie',
-            attendance: 87,
-            max_attendance: 100,
-            description: '48 heures pour créer une solution innovante en équipe.',
-            category: 'Tech',
-            date_start: '2025-09-22T09:00:00',
-            date_end: '2025-09-24T09:00:00'
-          },
-          {
-            id: 7,
-            title: 'Conférence IA & Éthique',
-            date: '2025-09-30',
-            time: '14h00',
-            place: 'Amphithéâtre Central',
-            attendance: 42,
-            max_attendance: 120,
-            description: 'Discussion sur les implications éthiques de l\'intelligence artificielle.',
-            category: 'Conférence',
-            date_start: '2025-09-30T14:00:00',
-            date_end: '2025-09-30T16:00:00'
-          }
-        ];
-        
-        setUpcomingEvents(additionalEvents);
-      }
-    };
-    
-    fetchEvents();
-  }, []);
+  const [affluenceData, setAffluenceData] = useState({});
+  
+  // Les événements sont déjà déclarés plus haut
   
   const [mentorRequests, setMentorRequests] = useState([
     {
@@ -392,196 +194,319 @@ const HomePage = () => {
       status: 'Planifié'
     }
   ]);
-  
-  // Charger les données des demandes de mentorat si l'API est disponible
-  useEffect(() => {
-    const fetchMentorRequests = async () => {
-      try {
-        // Vérifier si la méthode existe dans l'API
-        if (apiService.getMentorRequests) {
-          const data = await apiService.getMentorRequests();
-          setMentorRequests(data);
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement des demandes de mentorat:', error);
-      }
+
+  const getCategoryConfig = (category) => {
+    const configs = {
+      'Développement': { gradient: 'from-blue-500 to-cyan-500', color: 'bg-blue-100 text-blue-800', icon: '💻' },
+      'Carrière': { gradient: 'from-green-500 to-emerald-500', color: 'bg-green-100 text-green-800', icon: '🚀' },
+      'Ressources': { gradient: 'from-purple-500 to-pink-500', color: 'bg-purple-100 text-purple-800', icon: '📚' },
+      'Événements': { gradient: 'from-orange-500 to-red-500', color: 'bg-orange-100 text-orange-800', icon: '🎉' },
+      'Campus': { gradient: 'from-indigo-500 to-purple-500', color: 'bg-indigo-100 text-indigo-800', icon: '🏫' }
     };
-    
-    fetchMentorRequests();
-  }, []);
-  
-  // Mise à jour périodique des données d'affluence en temps réel
-  useEffect(() => {
-    const fetchRealTimeData = async () => {
-      try {
-        const realTimeData = await apiService.getRealTimeAffluence();
-        if (realTimeData) {
-          setAffluenceData(prevData => ({
-            ...prevData,
-            ...realTimeData
-          }));
-        }
-      } catch (error) {
-        console.error('Erreur lors de la mise à jour des données d\'affluence en temps réel:', error);
-      }
+    return configs[category] || { gradient: 'from-gray-500 to-gray-600', color: 'bg-gray-100 text-gray-800', icon: '💬' };
+  };
+
+  const getNewsBadgeColor = (badgeColor) => {
+    const colors = {
+      'blue': 'bg-blue-100 text-blue-800',
+      'green': 'bg-green-100 text-green-800',
+      'yellow': 'bg-yellow-100 text-yellow-800',
+      'red': 'bg-red-100 text-red-800'
     };
-    
-    // Mise à jour toutes les 30 secondes
-    const interval = setInterval(fetchRealTimeData, 30000);
-    return () => clearInterval(interval);
-  }, []);
-  
-  // Générer des alertes basées sur les données
-  const getAffluenceAlert = () => {
-    if (affluenceData.cafeteria.niveau === 'élevée') {
-      return { type: 'warning', text: `Cafétéria très fréquentée (${affluenceData.cafeteria.occupation}) - Attente: ${affluenceData.cafeteria.attente}` };
-    } else if (affluenceData.bibliotheque.niveau === 'élevée') {
-      return { type: 'warning', text: `Bibliothèque presque complète - ${affluenceData.bibliotheque.places}` };
-    } else if (affluenceData.salleEtude.niveau === 'élevée') {
-      return { type: 'warning', text: `Salles d'étude occupées à ${affluenceData.salleEtude.occupation}` };
-    } else if (affluenceData.labInfo.niveau === 'faible') {
-      return { type: 'success', text: `Laboratoire informatique disponible - ${affluenceData.labInfo.places}` };
-    }
-    return null;
+    return colors[badgeColor] || 'bg-gray-100 text-gray-800';
   };
-  
-  const getEventsAlert = () => {
-    const today = new Date();
-    const nextEvent = upcomingEvents.find(event => new Date(event.date_start) > today);
+
+  const getAffluenceColor = (niveau) => {
+    if (!niveau) return 'bg-gray-200 text-gray-600';
     
-    if (nextEvent) {
-      const daysUntil = Math.ceil((new Date(nextEvent.date_start) - today) / (1000 * 60 * 60 * 24));
-      if (daysUntil <= 3) {
-        return { type: 'info', text: `${nextEvent.title} dans ${daysUntil} jour${daysUntil > 1 ? 's' : ''}` };
-      }
+    switch (niveau.toLowerCase()) {
+      case 'élevée':
+      case 'elevee':
+      case 'high':
+        return 'bg-red-100 text-red-800';
+      case 'moyenne':
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'faible':
+      case 'low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
-    return null;
   };
-  
-  const getMentorAlert = () => {
-    const pendingRequests = mentorRequests.filter(req => req.status === 'En attente').length;
-    const urgentRequests = mentorRequests.filter(req => req.urgency === 'Élevée' && req.status === 'En attente').length;
-    
-    if (urgentRequests > 0) {
-      return { type: 'warning', text: `${urgentRequests} demande${urgentRequests > 1 ? 's' : ''} urgente${urgentRequests > 1 ? 's' : ''}` };
-    } else if (pendingRequests > 0) {
-      return { type: 'info', text: `${pendingRequests} demande${pendingRequests > 1 ? 's' : ''} en attente` };
-    }
-    return null;
-  };
-  
+
   return (
-    <div className="bg-gradient-to-b from-white to-gray-50 min-h-screen">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      {/* Header moderne avec image et dégradé */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        {/* Image en arrière-plan avec transparence */}
+        <div className="absolute inset-0 z-0 opacity-20">
+          <img 
+            src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+            alt="Campus background" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        {/* Forme ondulée en bas */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="w-full">
+            <path fill="#ffffff" fillOpacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+          </svg>
+        </div>
+        
+        <div className="container mx-auto px-6 py-36 relative z-10">
+          <div className="text-center">
+            <h1 className="text-6xl font-bold mb-8">
               Ton campus, ta vie étudiante
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              Tout ce dont tu as besoin pour réussir et t'épanouir à l'ÉSTIAM
+            <p className="text-2xl text-white/90 mb-16">
+              Tout ce dont tu as besoin pour réussir et t'épanouir à l'ESTIAM
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/affluence" className="bg-white text-purple-600 hover:bg-blue-50 font-medium px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
-                Regarder les salles disponibles
+            
+            <div className="flex justify-center gap-4">
+              <Link to="/chat" className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                Répondre aux discussions
               </Link>
-              <Link to="/social" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-purple-600 font-medium px-6 py-3 rounded-full transition-all">
+              <Link to="/social" className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-6 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                 Découvrir les événements
               </Link>
             </div>
           </div>
         </div>
-        
-        {/* Wave Divider */}
-        <div className="w-full">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" className="w-full h-auto -mb-1">
-            <path fill="#f9fafb" fillOpacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-          </svg>
-        </div>
       </div>
-      
-      {/* Stories Section - Horizontal Scrolling Events */}
-      <div className="container mx-auto px-4 py-8 overflow-hidden">
-        <div className="flex justify-between items-center mb-4 px-2">
-          <h2 className="text-xl font-semibold">À ne pas manquer 🔥</h2>
-          <Link to="/social" className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-full flex items-center transition-colors">
-            Voir tout
-            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </Link>
-        </div>
-        <div className="flex overflow-x-auto pb-4 gap-4 px-2 scrollbar-hide">
-          {upcomingEvents.map(event => (
-            <Link to={`/social/event/${event.id}`} key={event.id} className="flex-shrink-0 w-36 md:w-44 cursor-pointer transition-transform hover:scale-105">
-              <div className="bg-gradient-to-b from-blue-500 to-purple-600 h-48 md:h-56 rounded-xl relative overflow-hidden shadow-md">
-                <div className="absolute inset-0 flex flex-col justify-end p-3 bg-gradient-to-t from-black/70 to-transparent text-white">
-                  <p className="font-bold truncate">{event.title}</p>
-                  <p className="text-xs text-white/80">{new Date(event.date_start).toLocaleDateString('fr-FR')}</p>
-                  <p className="text-xs text-white/80">{event.place}</p>
-                </div>
-                <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm rounded-full px-2 py-1 text-xs text-white">
-                  {event.category}
-                </div>
-              </div>
+
+      <div className="container mx-auto px-6 py-8">
+        {/* Stories Section moderne */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent flex items-center">
+              <span className="mr-3 text-2xl">🔥</span>
+              À ne pas manquer
+            </h2>
+            <Link to="/social" className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center group">
+              Voir tous les événements
+              <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
             </Link>
-          ))}
-        </div>
-      </div>
-      
-      {/* Section Trouver un mentor - Placée juste après les événements */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-4 px-2">
-          <h2 className="text-2xl font-bold">Trouver un mentor</h2>
-          <Link to="/mentoring" className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-full flex items-center transition-colors">
-            Voir tout
-            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </Link>
-        </div>
-        
-        {loadingMentors ? (
-          <div className="flex justify-center items-center py-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {mentors.map(mentor => (
-              <Link 
-                key={mentor.id} 
-                to="/mentoring"
-                className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow p-4 flex items-center gap-4"
-              >
-                <div className={`h-16 w-16 rounded-full flex items-center justify-center flex-shrink-0 text-xl font-semibold ${getBackgroundColor(mentor.id)}`}>
-                  {getInitials(mentor.name)}
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">{mentor.name}</h3>
-                  <p className="text-gray-600">Niveau: {mentor.level}</p>
-                  <div className="flex items-center mt-1">
-                    <span className="text-yellow-500 mr-1">★</span>
-                    <span className="text-sm font-medium">{mentor.rating}</span>
+          
+          <div className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide">
+            {upcomingEvents.map((event, index) => (
+              <Link to={`/social/event/${event.id}`} key={event.id} className="flex-shrink-0 w-64 group cursor-pointer">
+                <div className="h-72 bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 rounded-3xl relative overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                  {/* Image de l'événement */}
+                  <img 
+                    src={event.image_url || getEventImage(event.category, event.title)} 
+                    alt={event.title}
+                    className="absolute inset-0 w-full h-full object-cover z-0"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
+                  
+                  <div className="absolute inset-0 flex flex-col justify-between p-6 text-white z-20">
+                    <div className="flex justify-between items-start">
+                      <div className="bg-white/20 backdrop-blur-sm rounded-xl px-3 py-1.5 text-sm font-medium">
+                        {/* Format de date adapté au nouveau format JSON */}
+                        {event.date_start && 
+                          new Date(event.date_start).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                      </div>
+                      <div className="bg-green-500/90 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-semibold">
+                        {event.attendance || '0+'}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="bg-black/30 backdrop-blur-sm rounded-lg px-2 py-1 text-xs font-medium inline-block mb-2">
+                        {event.category}
+                      </div>
+                      <h3 className="font-bold text-lg mb-2">{event.title}</h3>
+                      <p className="text-sm text-white/90 mb-3 line-clamp-2">{event.description}</p>
+                      <div className="flex items-center text-sm text-white/80">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {event.place || 'Lieu à confirmer'}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+        
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Section affluence - Maintenant à gauche */}
+          <aside className="lg:w-1/3">
+            {/* Titre de la section affluence */}
+            <div className="flex items-center mb-6">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white mr-3">
+                📊
+              </div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                Affluence Campus
+              </h2>
+            </div>
+
+            {/* Card Affluence */}
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/20 hover:shadow-2xl transition-shadow duration-300">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-gray-800">Statistiques d'affluence en temps réel</h3>
+                <div className="text-xs text-gray-500">
+                  Dernière mise à jour : {new Date().toLocaleTimeString('fr-FR')}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {/* Salle M */}
+                <div className="bg-gray-50 rounded-xl p-4 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-300 to-green-500"></div>
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold mr-2">M</div>
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Occupation</span>
+                        <span className="text-green-600 font-bold">{affluenceData?.salleM?.occupation || '2.5%'}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: affluenceData?.salleM?.occupation || '2.5%' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">{affluenceData?.salleM?.places || 'undefined places disponibles'}</div>
+                </div>
+                
+                {/* Salle L */}
+                <div className="bg-gray-50 rounded-xl p-4 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-300 to-green-500"></div>
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold mr-2">L</div>
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Occupation</span>
+                        <span className="text-green-600 font-bold">{affluenceData?.salleL?.occupation || '15%'}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: affluenceData?.salleL?.occupation || '15%' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">{affluenceData?.salleL?.places || 'undefined places disponibles'}</div>
+                </div>
+                
+                {/* Salle H */}
+                <div className="bg-gray-50 rounded-xl p-4 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-300 to-green-500"></div>
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold mr-2">H</div>
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Occupation</span>
+                        <span className="text-green-600 font-bold">{affluenceData?.salleH?.occupation || '5%'}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: affluenceData?.salleH?.occupation || '5%' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">{affluenceData?.salleH?.places || 'undefined places disponibles'}</div>
+                </div>
+              </div>
+              
+              <div className="mt-4 text-center">
+                <Link to="/affluence" className="text-blue-600 hover:text-blue-800 transition-colors text-sm flex items-center justify-center">
+                  Voir toutes les salles
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </aside>
+
+          {/* Contenu principal - Section des mentors - Maintenant à droite avec hauteur augmentée */}
+          <main className="lg:w-2/3">
+            {/* Header des mentors */}
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white mr-3">
+                  🎓
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                  Trouver un mentor
+                </h2>
+              </div>
+              <Link to="/mentoring" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                Voir tout
+                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
             
-            {mentors.length === 0 && (
-              <div className="col-span-full bg-gray-50 rounded-xl p-6 text-center">
-                <p className="text-gray-500">Aucun mentor disponible pour le moment.</p>
-                <Link to="/mentoring" className="text-purple-600 font-medium mt-2 inline-block">Voir toutes les options de mentorat</Link>
+            {/* Liste des mentors avec hauteur augmentée */}
+            {loadingMentors ? (
+              <div className="flex justify-center items-center py-10">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {mentors.map((mentor, index) => (
+                  <Link 
+                    to="/mentoring"
+                    key={index} 
+                    className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300 hover:scale-105 flex items-center gap-4 h-40"
+                  >
+                    <div className={`h-20 w-20 rounded-full flex items-center justify-center flex-shrink-0 text-2xl font-semibold ${getBackgroundColor(mentor.id)}`}>
+                      {getInitials(mentor.name)}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xl text-gray-900">{mentor.name}</h3>
+                      <p className="text-gray-600">Niveau: {mentor.level}</p>
+                      <p className="text-gray-600">{mentor.specialty}</p>
+                      <div className="flex items-center mt-2">
+                        <span className="text-yellow-500 mr-1 text-lg">★</span>
+                        <span className="font-medium">{mentor.rating}</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+                
+                {mentors.length === 0 && (
+                  <div className="col-span-full bg-white/80 backdrop-blur-xl rounded-3xl p-6 text-center shadow-xl border border-white/20">
+                    <p className="text-gray-500">Aucun mentor disponible pour le moment.</p>
+                    <Link to="/mentoring" className="text-purple-600 font-medium mt-2 inline-block">Voir toutes les options de mentorat</Link>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
+          </main>
+
+        </div>
       </div>
-      
-      {/* La section forum a été supprimée */}
+
+      {/* CSS réduit */}
+      <style jsx>{`
+        .line-clamp-2 {
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+        }
+        
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };
-
 
 export default HomePage;
