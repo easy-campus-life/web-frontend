@@ -44,8 +44,8 @@ const MainLayout = () => {
           <div className="flex justify-between items-center">
             {/* Logo + Navigation section */}
             <div className="flex items-center space-x-8">
-              {/* Logo section moderne - maintenant un lien */}
-              <Link to="/dashboard" className="flex items-center space-x-4 group/logo-link">
+                          {/* Logo section moderne - maintenant un lien */}
+            <Link to="/" className="flex items-center space-x-4 group/logo-link">
                 <div className="relative group">
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center text-2xl shadow-xl shadow-blue-500/25 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 group-hover/logo-link:scale-110 group-hover/logo-link:rotate-3">
                     🎓
@@ -64,35 +64,65 @@ const MainLayout = () => {
 
               {/* Navigation intégrée - sans Accueil */}
               <nav className="hidden lg:flex items-center space-x-1">
-                {[
-                  { path: '/affluence', icon: '📊', label: 'Affluence' },
-                  { path: '/social', icon: '🎉', label: 'Événements' },
-                  { path: '/mentoring', icon: '🎓', label: 'Mentorat' },
-                  { path: '/chat', icon: '💭', label: 'Chat' }
-                ].map((item, index) => {
-                  const isActive = location.pathname === item.path;
-                  
-                  return (
-                    <Link 
-                      key={item.path}
-                      to={item.path}
-                      className={`group relative py-2 px-4 font-medium transition-all duration-300 flex items-center space-x-2 rounded-xl ${
-                        isActive 
-                          ? 'text-blue-600 bg-blue-50 shadow-md' 
-                          : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
-                      }`}
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      <span className="text-lg group-hover:scale-110 transition-transform duration-300">
-                        {item.icon}
-                      </span>
-                      <span className="text-sm">{item.label}</span>
-                      
-                      {/* Effet de brillance */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-xl"></div>
-                    </Link>
-                  );
-                })}
+                {/* Affluence */}
+                <Link 
+                  to="/affluence"
+                  className={`group relative py-2 px-4 font-medium transition-all duration-300 flex items-center space-x-2 rounded-xl ${
+                    location.pathname.startsWith('/affluence')
+                      ? 'text-blue-600 bg-blue-50 shadow-md' 
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                  }`}
+                  style={{ animationDelay: '0ms' }}
+                >
+                  <span className="text-lg group-hover:scale-110 transition-transform duration-300">📊</span>
+                  <span className="text-sm">Affluence</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-xl"></div>
+                </Link>
+
+                {/* Événements */}
+                <Link 
+                  to="/social"
+                  className={`group relative py-2 px-4 font-medium transition-all duration-300 flex items-center space-x-2 rounded-xl ${
+                    location.pathname.startsWith('/social')
+                      ? 'text-blue-600 bg-blue-50 shadow-md' 
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                  }`}
+                  style={{ animationDelay: '100ms' }}
+                >
+                  <span className="text-lg group-hover:scale-110 transition-transform duration-300">🎉</span>
+                  <span className="text-sm">Événements</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-xl"></div>
+                </Link>
+
+                {/* Mentorat */}
+                <Link 
+                  to="/mentoring"
+                  className={`group relative py-2 px-4 font-medium transition-all duration-300 flex items-center space-x-2 rounded-xl ${
+                    location.pathname.startsWith('/mentoring')
+                      ? 'text-blue-600 bg-blue-50 shadow-md' 
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                  }`}
+                  style={{ animationDelay: '200ms' }}
+                >
+                  <span className="text-lg group-hover:scale-110 transition-transform duration-300">🎓</span>
+                  <span className="text-sm">Mentorat</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-xl"></div>
+                </Link>
+
+                {/* Chat */}
+                <Link 
+                  to="/chat"
+                  className={`group relative py-2 px-4 font-medium transition-all duration-300 flex items-center space-x-2 rounded-xl ${
+                    location.pathname.startsWith('/chat')
+                      ? 'text-blue-600 bg-blue-50 shadow-md' 
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                  }`}
+                  style={{ animationDelay: '300ms' }}
+                >
+                  <span className="text-lg group-hover:scale-110 transition-transform duration-300">💭</span>
+                  <span className="text-sm">Chat</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-xl"></div>
+                </Link>
               </nav>
             </div>
 
@@ -133,36 +163,80 @@ const MainLayout = () => {
       <nav className="lg:hidden relative z-40 bg-white/60 backdrop-blur-xl border-b border-white/20 shadow-lg">
         <div className="container mx-auto px-6">
           <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
-            {[
-              { path: '/dashboard', icon: '🏠', label: 'Accueil' },
-              { path: '/dashboard/affluence', icon: '📊', label: 'Affluence' },
-              { path: '/dashboard/social', icon: '🎉', label: 'Événements' },
-              { path: '/dashboard/mentoring', icon: '🎓', label: 'Mentorat' },
-              { path: '/dashboard/chat', icon: '💭', label: 'Chat' }
-            ].map((item, index) => {
-              const isActive = location.pathname === item.path || (item.path === '/dashboard' && location.pathname === '/dashboard/');
-              
-              return (
-                <Link 
-                  key={item.path}
-                  to={item.path}
-                  className={`group relative py-4 px-6 font-medium transition-all duration-300 flex items-center space-x-2 rounded-t-2xl ${
-                    isActive 
-                      ? 'text-blue-600 bg-gradient-to-t from-blue-50 to-transparent border-b-2 border-blue-600' 
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
-                  }`}
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <span className="text-lg group-hover:scale-110 transition-transform duration-300">
-                    {item.icon}
-                  </span>
-                  <span className="hidden sm:block">{item.label}</span>
-                  
-                  {/* Effet de brillance */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-t-2xl"></div>
-                </Link>
-              );
-            })}
+            {/* Accueil */}
+            <Link 
+              to="/"
+              className={`group relative py-4 px-6 font-medium transition-all duration-300 flex items-center space-x-2 rounded-t-2xl ${
+                location.pathname === '/'
+                  ? 'text-blue-600 bg-gradient-to-t from-blue-50 to-transparent border-b-2 border-blue-600' 
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+              }`}
+              style={{ animationDelay: '0ms' }}
+            >
+              <span className="text-lg group-hover:scale-110 transition-transform duration-300">🏠</span>
+              <span className="hidden sm:block">Accueil</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-t-2xl"></div>
+            </Link>
+
+            {/* Affluence */}
+            <Link 
+              to="/affluence"
+              className={`group relative py-4 px-6 font-medium transition-all duration-300 flex items-center space-x-2 rounded-t-2xl ${
+                location.pathname.startsWith('/affluence')
+                  ? 'text-blue-600 bg-gradient-to-t from-blue-50 to-transparent border-b-2 border-blue-600' 
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+              }`}
+              style={{ animationDelay: '100ms' }}
+            >
+              <span className="text-lg group-hover:scale-110 transition-transform duration-300">📊</span>
+              <span className="hidden sm:block">Affluence</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-t-2xl"></div>
+            </Link>
+
+            {/* Événements */}
+            <Link 
+              to="/social"
+              className={`group relative py-4 px-6 font-medium transition-all duration-300 flex items-center space-x-2 rounded-t-2xl ${
+                location.pathname.startsWith('/social')
+                  ? 'text-blue-600 bg-gradient-to-t from-blue-50 to-transparent border-b-2 border-blue-600' 
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+              }`}
+              style={{ animationDelay: '200ms' }}
+            >
+              <span className="text-lg group-hover:scale-110 transition-transform duration-300">🎉</span>
+              <span className="hidden sm:block">Événements</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-t-2xl"></div>
+            </Link>
+
+            {/* Mentorat */}
+            <Link 
+              to="/mentoring"
+              className={`group relative py-4 px-6 font-medium transition-all duration-300 flex items-center space-x-2 rounded-t-2xl ${
+                location.pathname.startsWith('/mentoring')
+                  ? 'text-blue-600 bg-gradient-to-t from-blue-50 to-transparent border-b-2 border-blue-600' 
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+              }`}
+              style={{ animationDelay: '300ms' }}
+            >
+              <span className="text-lg group-hover:scale-110 transition-transform duration-300">🎓</span>
+              <span className="hidden sm:block">Mentorat</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-t-2xl"></div>
+            </Link>
+
+            {/* Chat */}
+            <Link 
+              to="/chat"
+              className={`group relative py-4 px-6 font-medium transition-all duration-300 flex items-center space-x-2 rounded-t-2xl ${
+                location.pathname.startsWith('/chat')
+                  ? 'text-blue-600 bg-gradient-to-t from-blue-50 to-transparent border-b-2 border-blue-600' 
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+              }`}
+              style={{ animationDelay: '400ms' }}
+            >
+              <span className="text-lg group-hover:scale-110 transition-transform duration-300">💭</span>
+              <span className="hidden sm:block">Chat</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-t-2xl"></div>
+            </Link>
           </div>
         </div>
       </nav>

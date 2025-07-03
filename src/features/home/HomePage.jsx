@@ -263,15 +263,6 @@ const HomePage = () => {
             <p className="text-2xl text-white/90 mb-16">
               Tout ce dont tu as besoin pour réussir et t'épanouir à l'ESTIAM
             </p>
-            
-            <div className="flex justify-center gap-4">
-              <Link to="/chat" className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                Répondre aux discussions
-              </Link>
-              <Link to="/social" className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-6 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                Découvrir les événements
-              </Link>
-            </div>
           </div>
         </div>
       </div>
