@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Link } from 'react-router-dom';
 
 const ChatBotModal = ({ onClose, inline = false }) => {
   const [messages, setMessages] = useState([
-    { id: 1, text: "Bonjour ! Je suis l'assistant virtuel d'EasyCampus. Comment puis-je vous aider aujourd'hui ?", isBot: true }
+    { id: 1, text: "Bonjour ! Je suis Maeva l'assistant virtuel d'EasyCampus. Comment puis-je vous aider aujourd'hui ?", isBot: true }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -56,16 +58,24 @@ const ChatBotModal = ({ onClose, inline = false }) => {
 
   const renderMessages = () =>
     messages.map((message) => (
-      <div
-        key={message.id}
-        className={`mb-4 flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
-      >
-        <div
-          className={`rounded-lg px-4 py-2 max-w-xs ${message.isBot
-            ? 'bg-blue-100 text-blue-900'
-            : 'bg-blue-600 text-white'}`}
-        >
-          {message.text}
+      <div key={message.id} className={`mb-3 flex ${message.isBot ? 'justify-start' : 'justify-end'}`}>
+        <div className={`rounded-lg px-3 py-2 max-w-xs text-sm ${message.isBot ? 'bg-blue-100 text-blue-900' : 'bg-blue-600 text-white'}`}>
+          <ReactMarkdown
+            components={{
+              a: ({ href, children }) => {
+                const isInternal = href.startsWith('/');
+                return isInternal ? (
+                  <Link to={href} className="text-blue-600 underline">{children}</Link>
+                ) : (
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                    {children}
+                  </a>
+                );
+              }
+            }}
+          >
+            {message.text}
+          </ReactMarkdown>
         </div>
       </div>
     ));
