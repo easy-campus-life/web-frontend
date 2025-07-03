@@ -93,17 +93,14 @@ const SocialPage = () => {
 
   return (
     <>
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-16 mb-8">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Événements Campus</h1>
-            <p className="text-xl mb-6">Découvrez et participez aux événements qui favorisent la vie étudiante d'ESTIAM</p>
-          </div>
-        </div>
-      </div>
-      
       <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center mb-6">
+          <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h1 className="text-3xl font-bold">Événements Campus</h1>
+        </div>
+        <p className="text-gray-600 mb-8">Découvrez et participez aux événements qui favorisent la vie étudiante d'ESTIAM</p>
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">
             <button className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium">Tous</button>
