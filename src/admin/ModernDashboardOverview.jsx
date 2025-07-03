@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import apiService from '../services/apiService';
 
-const ModernDashboardOverview = () => {
+const ModernDashboardOverview = ({ setActiveTab }) => {
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalEvents: 0,
     totalMentoring: 0,
-    upcomingEvents: 0
+    upcomingEvents: 0,
+    totalClassrooms: 0,
+    totalPresences: 0
   });
   
   const [recentActivity, setRecentActivity] = useState([]);
@@ -22,12 +24,21 @@ const ModernDashboardOverview = () => {
       setLoading(true);
       setError(null);
       
-      // 🔥 CHARGEMENT PARALLÈLE DE TOUTES LES DONNÉES
-      const [usersResponse, eventsResponse, mentoringResponse, upcomingEventsResponse] = await Promise.all([
+      // 🔥 CHARGEMENT PARALLÈLE DE TOUTES LES DONNÉES AVEC CORRECTION DES APPELS API
+      const [
+        usersResponse, 
+        eventsResponse, 
+        mentoringResponse, 
+        upcomingEventsResponse,
+        classroomsResponse,
+        presencesResponse
+      ] = await Promise.all([
         apiService.getUsers().catch(() => []),
         apiService.getEvents().catch(() => []),
-        apiService.getMentoring().catch(() => []),
-        apiService.getUpcomingEvents().catch(() => [])
+        apiService.getMentoringSessions().catch(() => []), // 🔥 CORRECTION: getMentoringSessions au lieu de getMentoring
+        apiService.getUpcomingEvents().catch(() => []),
+        apiService.getClassrooms().catch(() => []),
+        apiService.getPresences().catch(() => [])
       ]);
       
       // 🔥 CALCUL DES STATISTIQUES RÉELLES
@@ -35,7 +46,9 @@ const ModernDashboardOverview = () => {
         totalUsers: usersResponse?.length || 0,
         totalEvents: eventsResponse?.length || 0,
         totalMentoring: mentoringResponse?.length || 0,
-        upcomingEvents: upcomingEventsResponse?.length || 0
+        upcomingEvents: upcomingEventsResponse?.length || 0,
+        totalClassrooms: classroomsResponse?.length || 0,
+        totalPresences: presencesResponse?.length || 0
       });
 
       // 🔥 GÉNÉRATION DE L'ACTIVITÉ RÉCENTE À PARTIR DES VRAIES DONNÉES
@@ -44,14 +57,16 @@ const ModernDashboardOverview = () => {
       // Derniers utilisateurs créés
       if (usersResponse?.length > 0) {
         const recentUsers = usersResponse
+          .filter(user => user.created_at)
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, 2);
         
         recentUsers.forEach(user => {
           activity.push({
             type: 'user',
-            message: `${user.name} s'est inscrit`,
+            message: `${user.name || user.email || 'Utilisateur'} s'est inscrit`,
             time: getTimeAgo(user.created_at),
+            timestamp: new Date(user.created_at),
             color: 'from-blue-400 to-cyan-400'
           });
         });
@@ -60,6 +75,7 @@ const ModernDashboardOverview = () => {
       // Derniers événements créés
       if (eventsResponse?.length > 0) {
         const recentEvents = eventsResponse
+          .filter(event => event.created_at)
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, 2);
         
@@ -68,6 +84,7 @@ const ModernDashboardOverview = () => {
             type: 'event',
             message: `Événement "${event.title}" créé`,
             time: getTimeAgo(event.created_at),
+            timestamp: new Date(event.created_at),
             color: 'from-green-400 to-emerald-400'
           });
         });
@@ -76,6 +93,7 @@ const ModernDashboardOverview = () => {
       // Dernières relations de mentorat créées
       if (mentoringResponse?.length > 0) {
         const recentMentoring = mentoringResponse
+          .filter(relation => relation.created_at)
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, 1);
         
@@ -84,7 +102,26 @@ const ModernDashboardOverview = () => {
             type: 'mentoring',
             message: `Nouvelle relation de mentorat créée`,
             time: getTimeAgo(relation.created_at),
+            timestamp: new Date(relation.created_at),
             color: 'from-purple-400 to-pink-400'
+          });
+        });
+      }
+
+      // Dernières salles de classe créées
+      if (classroomsResponse?.length > 0) {
+        const recentClassrooms = classroomsResponse
+          .filter(classroom => classroom.created_at)
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 1);
+        
+        recentClassrooms.forEach(classroom => {
+          activity.push({
+            type: 'classroom',
+            message: `Salle "${classroom.name}" créée`,
+            time: getTimeAgo(classroom.created_at),
+            timestamp: new Date(classroom.created_at),
+            color: 'from-indigo-400 to-purple-400'
           });
         });
       }
@@ -92,7 +129,7 @@ const ModernDashboardOverview = () => {
       // Trier par date et garder les 5 plus récents
       setRecentActivity(
         activity
-          .sort((a, b) => new Date(b.time) - new Date(a.time))
+          .sort((a, b) => b.timestamp - a.timestamp)
           .slice(0, 5)
       );
       
@@ -100,12 +137,14 @@ const ModernDashboardOverview = () => {
       console.error('Erreur lors du chargement du dashboard:', err);
       setError(err.message);
       
-      // Fallback vers données de démo
+      // 🔥 DONNÉES DE FALLBACK AMÉLIORÉES
       setStats({
         totalUsers: 42,
         totalEvents: 8,
         totalMentoring: 15,
-        upcomingEvents: 3
+        upcomingEvents: 3,
+        totalClassrooms: 6,
+        totalPresences: 127
       });
       
       setRecentActivity([
@@ -120,6 +159,18 @@ const ModernDashboardOverview = () => {
           message: 'Hackathon 2025 en préparation',
           time: '15 min',
           color: 'from-green-400 to-emerald-400'
+        },
+        {
+          type: 'mentoring',
+          message: 'Nouvelle relation de mentorat établie',
+          time: '1h',
+          color: 'from-purple-400 to-pink-400'
+        },
+        {
+          type: 'classroom',
+          message: 'Salle de classe "Lab A" ajoutée',
+          time: '2h',
+          color: 'from-indigo-400 to-purple-400'
         }
       ]);
     } finally {
@@ -245,7 +296,7 @@ const ModernDashboardOverview = () => {
       {/* Header avec gradient */}
       <div className="text-center py-8">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent mb-4">
-          Tableau de Bord
+          📊 Tableau de Bord
         </h1>
         <p className="text-gray-600 text-lg">Vue d'ensemble de votre plateforme EasyCampus</p>
         {!loading && (
@@ -272,12 +323,12 @@ const ModernDashboardOverview = () => {
         />
       )}
 
-      {/* Statistiques principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* 🔥 STATISTIQUES PRINCIPALES MISES À JOUR */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <StatCard
-          title="Utilisateurs Total"
+          title="Utilisateurs"
           value={stats.totalUsers}
-          change={stats.totalUsers > 0 ? "Données en temps réel" : null}
+          change={stats.totalUsers > 0 ? "Inscrits" : null}
           icon="👥"
           gradient="from-blue-500 to-cyan-500"
           delay={100}
@@ -291,52 +342,86 @@ const ModernDashboardOverview = () => {
           delay={200}
         />
         <StatCard
-          title="Relations Mentorat"
+          title="Mentorat"
           value={stats.totalMentoring}
-          change={stats.totalMentoring > 0 ? "Actives" : null}
+          change={stats.totalMentoring > 0 ? "Relations actives" : null}
           icon="🎓"
           gradient="from-purple-500 to-pink-500"
           delay={300}
         />
         <StatCard
-          title="Événements à venir"
+          title="À venir"
           value={stats.upcomingEvents}
-          change="Prochainement"
-          icon="📈"
+          change="Événements"
+          icon="📅"
           gradient="from-orange-500 to-red-500"
           delay={400}
+        />
+        <StatCard
+          title="Salles"
+          value={stats.totalClassrooms}
+          change={stats.totalClassrooms > 0 ? "Disponibles" : null}
+          icon="🏫"
+          gradient="from-indigo-500 to-purple-500"
+          delay={500}
+        />
+        <StatCard
+          title="Présences"
+          value={stats.totalPresences}
+          change={stats.totalPresences > 0 ? "Enregistrées" : null}
+          icon="📍"
+          gradient="from-teal-500 to-cyan-500"
+          delay={600}
         />
       </div>
 
       {/* Actions rapides avec design moderne */}
       <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20">
-        <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-          Actions Rapides
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <QuickAction
-            title="Voir Utilisateurs"
-            icon="👥"
-            gradient="from-blue-500 to-cyan-500"
-            onClick={() => window.location.hash = '#users'}
-          />
-          <QuickAction
-            title="Gérer Événements"
-            icon="🎯"
-            gradient="from-green-500 to-emerald-500"
-            onClick={() => window.location.hash = '#events'}
-          />
-          <QuickAction
-            title="Mentorat"
-            icon="🎓"
-            gradient="from-purple-500 to-pink-500"
-            onClick={() => window.location.hash = '#mentors'}
-          />
-          <QuickAction
-            title="Actualiser"
-            icon="🔄"
-            gradient="from-gray-600 to-gray-800"
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+            ⚡ Actions Rapides
+          </h3>
+          <button
             onClick={loadDashboardData}
+            disabled={loading}
+            className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center px-4 py-2 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300"
+          >
+            <svg className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Actualiser
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <QuickAction
+            title="Utilisateurs"
+            icon="👥"
+            gradient="from-purple-500 to-pink-500"
+            onClick={() => setActiveTab ? setActiveTab('users') : console.log('Navigation vers users')}
+          />
+          <QuickAction
+            title="Événements"
+            icon="🎉"
+            gradient="from-green-500 to-emerald-500"
+            onClick={() => setActiveTab ? setActiveTab('events') : console.log('Navigation vers events')}
+          />
+          <QuickAction
+            title="Mentors"
+            icon="🎓"
+            gradient="from-orange-500 to-red-500"
+            onClick={() => setActiveTab ? setActiveTab('mentors') : console.log('Navigation vers mentors')}
+          />
+          <QuickAction
+            title="Présences"
+            icon="🏢"
+            gradient="from-indigo-500 to-purple-600"
+            onClick={() => setActiveTab ? setActiveTab('presences') : console.log('Navigation vers presences')}
+          />
+          <QuickAction
+            title="Analytics"
+            icon="📈"
+            gradient="from-teal-500 to-cyan-600"
+            onClick={() => setActiveTab ? setActiveTab('analytics') : console.log('Navigation vers analytics')}
           />
         </div>
       </div>
@@ -351,15 +436,22 @@ const ModernDashboardOverview = () => {
               { label: 'Utilisateurs', value: stats.totalUsers, color: 'from-blue-600 to-cyan-400' },
               { label: 'Événements', value: stats.totalEvents, color: 'from-green-600 to-emerald-400' },
               { label: 'Mentorat', value: stats.totalMentoring, color: 'from-purple-600 to-pink-400' },
-              { label: 'À venir', value: stats.upcomingEvents, color: 'from-orange-600 to-red-400' }
+              { label: 'Salles', value: stats.totalClassrooms, color: 'from-indigo-600 to-purple-400' },
+              { label: 'Présences', value: stats.totalPresences, color: 'from-teal-600 to-cyan-400' }
             ].map((item, index) => {
-              const maxValue = Math.max(stats.totalUsers, stats.totalEvents, stats.totalMentoring, stats.upcomingEvents);
-              const height = maxValue > 0 ? (item.value / maxValue) * 200 : 20;
+              const maxValue = Math.max(
+                stats.totalUsers, 
+                stats.totalEvents, 
+                stats.totalMentoring, 
+                stats.totalClassrooms, 
+                stats.totalPresences
+              );
+              const height = maxValue > 0 ? (item.value / maxValue) * 180 : 20;
               
               return (
                 <div key={index} className="flex flex-col items-center group">
                   <div 
-                    className={`bg-gradient-to-t ${item.color} w-12 mb-2 rounded-t-lg transition-all duration-1000 ease-out group-hover:scale-110 shadow-lg relative`}
+                    className={`bg-gradient-to-t ${item.color} w-10 mb-2 rounded-t-lg transition-all duration-1000 ease-out group-hover:scale-110 shadow-lg relative`}
                     style={{ height: `${height}px` }}
                   >
                     <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm font-bold text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

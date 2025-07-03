@@ -10,14 +10,16 @@ const ModernEventsManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
+  // 🔥 CORRECTION: Utilisation de image_url et attendance en string
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'general',
-    attendance: 'open',
+    attendance: '50', // 🔥 STRING au lieu de number
     place: '',
     date_start: '',
-    date_end: ''
+    date_end: '',
+    image_url: '' // 🔥 image_url au lieu de imageurl
   });
 
   useEffect(() => {
@@ -29,7 +31,6 @@ const ModernEventsManagement = () => {
       setLoading(true);
       setError(null);
       
-      // 🔥 VRAIE INTÉGRATION API
       const response = await apiService.getEvents();
       setEvents(response || []);
       
@@ -37,17 +38,18 @@ const ModernEventsManagement = () => {
       console.error('Erreur lors du chargement des événements:', err);
       setError(err.message);
       
-      // Fallback vers données de démo en cas d'erreur
+      // Données de fallback avec le bon format
       setEvents([
         {
           id: 1,
           title: 'Soirée d\'intégration 2025',
           description: 'Venez rencontrer les nouveaux étudiants lors de notre soirée d\'intégration annuelle. Au programme : animations, jeux et networking !',
           category: 'social',
-          attendance: 'open',
+          attendance: '100', // STRING
           place: 'Campus Principal - Grand Amphithéâtre',
           date_start: '2025-09-15',
           date_end: '2025-09-15',
+          image_url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&h=400&fit=crop',
           created_at: '2025-07-01T10:00:00Z',
           updated_at: '2025-07-01T10:00:00Z'
         },
@@ -56,10 +58,11 @@ const ModernEventsManagement = () => {
           title: 'Hackathon Innovation 48h',
           description: '48 heures pour créer une solution innovante en équipe. Défis tech, IA et durabilité au programme.',
           category: 'tech',
-          attendance: 'limited',
+          attendance: '30', // STRING
           place: 'Bâtiment Technologie - Labs 1-5',
           date_start: '2025-09-22',
           date_end: '2025-09-24',
+          image_url: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=400&fit=crop',
           created_at: '2025-07-05T14:30:00Z',
           updated_at: '2025-07-05T14:30:00Z'
         }
@@ -73,25 +76,26 @@ const ModernEventsManagement = () => {
     try {
       setLoading(true);
       
-      // 🔥 PRÉPARER LES DONNÉES EXACTEMENT COMME L'API LES ATTEND
+      // 🔥 CORRECTION: Données formatées exactement selon le modèle API
       const eventData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         category: formData.category,
-        attendance: formData.attendance,
+        attendance: formData.attendance.toString(), // 🔥 FORCÉ EN STRING
         place: formData.place.trim(),
         date_start: formData.date_start,
-        date_end: formData.date_end || formData.date_start
+        date_end: formData.date_end || formData.date_start,
+        image_url: formData.image_url.trim() // 🔥 image_url au lieu de imageurl
       };
 
+      console.log('🔥 Données envoyées à l\'API:', eventData); // DEBUG
+
       if (editingEvent) {
-        // 🔥 MISE À JOUR ÉVÉNEMENT
         const updatedEvent = await apiService.updateEvent(editingEvent.id, eventData);
         setEvents(events.map(event => 
           event.id === editingEvent.id ? updatedEvent : event
         ));
       } else {
-        // 🔥 CRÉATION ÉVÉNEMENT
         const newEvent = await apiService.createEvent(eventData);
         setEvents([...events, newEvent]);
       }
@@ -112,7 +116,6 @@ const ModernEventsManagement = () => {
       try {
         setLoading(true);
         
-        // 🔥 SUPPRESSION ÉVÉNEMENT
         await apiService.deleteEvent(eventId);
         setEvents(events.filter(event => event.id !== eventId));
         
@@ -131,10 +134,11 @@ const ModernEventsManagement = () => {
       title: event.title,
       description: event.description,
       category: event.category || 'general',
-      attendance: event.attendance || 'open',
+      attendance: event.attendance?.toString() || '50', // 🔥 CONVERSION EN STRING
       place: event.place,
       date_start: event.date_start,
-      date_end: event.date_end
+      date_end: event.date_end,
+      image_url: event.image_url || event.imageurl || '' // 🔥 GESTION DES DEUX FORMATS
     });
     setShowModal(true);
   };
@@ -145,10 +149,11 @@ const ModernEventsManagement = () => {
       title: '',
       description: '',
       category: 'general',
-      attendance: 'open',
+      attendance: '50', // 🔥 STRING
       place: '',
       date_start: '',
-      date_end: ''
+      date_end: '',
+      image_url: '' // 🔥 image_url
     });
   };
 
@@ -183,21 +188,21 @@ const ModernEventsManagement = () => {
   };
 
   const getAttendanceBadge = (attendance) => {
-    const types = {
-      open: { label: 'Ouvert à tous', color: 'bg-green-100 text-green-800', icon: '🌐' },
-      limited: { label: 'Places limitées', color: 'bg-yellow-100 text-yellow-800', icon: '🎫' },
-      invitation: { label: 'Sur invitation', color: 'bg-blue-100 text-blue-800', icon: '📩' },
-      members: { label: 'Membres uniquement', color: 'bg-purple-100 text-purple-800', icon: '👥' },
-      private: { label: 'Privé', color: 'bg-red-100 text-red-800', icon: '🔒' }
-    };
+    const numAttendance = Number(attendance);
     
-    const type = types[attendance] || types.open;
-    return (
-      <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${type.color}`}>
-        <span className="mr-1">{type.icon}</span>
-        {type.label}
-      </span>
-    );
+    if (numAttendance === 0) {
+      return <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">🚫 Fermé</span>;
+    }
+    
+    if (numAttendance < 20) {
+      return <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">🎫 {numAttendance} places</span>;
+    }
+    
+    if (numAttendance < 50) {
+      return <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">📊 {numAttendance} places</span>;
+    }
+    
+    return <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">🌐 {numAttendance} places</span>;
   };
 
   const filteredEvents = events.filter(event => {
@@ -223,7 +228,6 @@ const ModernEventsManagement = () => {
     }
   });
 
-  // 🔥 GESTION DES ERREURS API
   const ErrorAlert = ({ message, onRetry }) => (
     <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
       <div className="flex items-center">
@@ -261,7 +265,7 @@ const ModernEventsManagement = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Header moderne */}
+      {/* Header */}
       <div className="text-center py-8">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent mb-4">
           🎉 Gestion des Événements
@@ -269,7 +273,7 @@ const ModernEventsManagement = () => {
         <p className="text-gray-600 text-lg">{filteredEvents.length} événements trouvés sur {events.length} au total</p>
       </div>
 
-      {/* 🔥 ALERTE D'ERREUR */}
+      {/* Alerte d'erreur */}
       {error && (
         <ErrorAlert 
           message={error} 
@@ -329,7 +333,6 @@ const ModernEventsManagement = () => {
             Créer événement
           </button>
 
-          {/* Bouton rafraîchissement */}
           <button
             onClick={loadEvents}
             disabled={loading}
@@ -353,19 +356,36 @@ const ModernEventsManagement = () => {
               className="group bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-500 hover:scale-105 transform relative overflow-hidden"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              {/* Header coloré de la carte */}
-              <div className={`h-24 bg-gradient-to-r ${categoryInfo.gradient} relative`}>
+              {/* Header coloré avec image */}
+              <div className={`h-24 bg-gradient-to-r ${categoryInfo.gradient} relative overflow-hidden`}>
+                {/* 🔥 CORRECTION: Gestion des deux formats d'image */}
+                {(event.image_url || event.imageurl) && (
+                  <div className="absolute inset-0">
+                    <img 
+                      src={event.image_url || event.imageurl} 
+                      alt={event.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black/50"></div>
+                  </div>
+                )}
+                
+                {/* Overlay par défaut */}
                 <div className="absolute inset-0 bg-black/20"></div>
-                <div className="absolute top-4 left-4 text-4xl">{categoryInfo.icon}</div>
-                <div className="absolute top-4 right-4">
+                
+                <div className="absolute top-4 left-4 text-4xl z-10">{categoryInfo.icon}</div>
+                <div className="absolute top-4 right-4 z-10">
                   {getStatusBadge(event)}
                 </div>
-                <div className="absolute bottom-4 left-4 right-4">
+                <div className="absolute bottom-4 left-4 right-4 z-10">
                   <h3 className="font-bold text-white text-lg line-clamp-1">{event.title}</h3>
                 </div>
               </div>
 
-              {/* Contenu de la carte */}
+              {/* Contenu */}
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-gradient-to-r ${categoryInfo.gradient} text-white`}>
@@ -428,7 +448,7 @@ const ModernEventsManagement = () => {
         })}
       </div>
 
-      {/* Message si aucun événement */}
+      {/* Message vide */}
       {filteredEvents.length === 0 && !loading && (
         <div className="text-center py-12 bg-white/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20">
           <div className="text-6xl mb-4">📅</div>
@@ -446,11 +466,11 @@ const ModernEventsManagement = () => {
         </div>
       )}
 
-      {/* Modal moderne de création/édition */}
+      {/* Modal de création/édition */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white/90 backdrop-blur-xl rounded-3xl p-8 w-full max-w-2xl mx-4 shadow-2xl border border-white/20 max-h-screen overflow-y-auto">
-            {/* Header du modal */}
+            {/* Header modal */}
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 {editingEvent ? '✏️ Modifier l\'événement' : '🎯 Nouvel événement'}
@@ -497,51 +517,6 @@ const ModernEventsManagement = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    📂 Catégorie
-                  </label>
-                  <select
-                    required
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
-                    disabled={loading}
-                  >
-                    <option value="">Sélectionner une catégorie</option>
-                    <option value="general">📅 Général</option>
-                    <option value="social">🎉 Social</option>
-                    <option value="tech">💻 Tech</option>
-                    <option value="conference">🎤 Conférence</option>
-                    <option value="workshop">🛠️ Atelier</option>
-                    <option value="career">🏢 Carrière</option>
-                    <option value="academic">📚 Académique</option>
-                    <option value="sport">⚽ Sport</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    🎫 Type de participation
-                  </label>
-                  <select
-                    required
-                    value={formData.attendance}
-                    onChange={(e) => setFormData({ ...formData, attendance: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
-                    disabled={loading}
-                  >
-                    <option value="">Sélectionner le type</option>
-                    <option value="open">🌐 Ouvert à tous</option>
-                    <option value="limited">🎫 Places limitées</option>
-                    <option value="invitation">📩 Sur invitation</option>
-                    <option value="members">👥 Membres uniquement</option>
-                    <option value="private">🔒 Privé</option>
-                  </select>
-                </div>
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   📍 Lieu
@@ -555,6 +530,84 @@ const ModernEventsManagement = () => {
                   placeholder="Ex: Amphithéâtre A, Campus Principal"
                   disabled={loading}
                 />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    📂 Catégorie
+                  </label>
+                  <select
+                    required
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+                    disabled={loading}
+                  >
+                    <option value="general">📅 Général</option>
+                    <option value="social">🎉 Social</option>
+                    <option value="tech">💻 Tech</option>
+                    <option value="conference">🎤 Conférence</option>
+                    <option value="workshop">🛠️ Atelier</option>
+                    <option value="career">🏢 Carrière</option>
+                    <option value="academic">📚 Académique</option>
+                    <option value="sport">⚽ Sport</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    🎫 Nombre de places
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    max="1000"
+                    value={formData.attendance}
+                    onChange={(e) => setFormData({ ...formData, attendance: e.target.value })} // 🔥 GARDÉ EN STRING
+                    className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+                    placeholder="Ex: 50"
+                    disabled={loading}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Nombre maximum de participants (0 = fermé)
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  🖼️ Image de l'événement (URL)
+                </label>
+                <input
+                  type="url"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+                  placeholder="https://example.com/image.jpg"
+                  disabled={loading}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  URL de l'image qui illustrera votre événement (optionnel)
+                </p>
+                
+                {/* Prévisualisation de l'image */}
+                {formData.image_url && (
+                  <div className="mt-3">
+                    <img 
+                      src={formData.image_url} 
+                      alt="Prévisualisation"
+                      className="w-full h-24 object-cover rounded-xl border"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                      onLoad={(e) => {
+                        e.target.style.display = 'block';
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -599,7 +652,7 @@ const ModernEventsManagement = () => {
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={loading || !formData.title.trim() || !formData.place.trim() || !formData.date_start || !formData.category || !formData.attendance}
+                  disabled={loading || !formData.title.trim() || !formData.place.trim() || !formData.date_start || !formData.category || Number(formData.attendance) < 0}
                   className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
                   {loading ? (

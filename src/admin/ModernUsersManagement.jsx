@@ -9,6 +9,8 @@ const ModernUsersManagement = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
+  const [deletingUserId, setDeletingUserId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -28,18 +30,22 @@ const ModernUsersManagement = () => {
       
       // 🔥 VRAIE INTÉGRATION API
       const response = await apiService.getUsers();
-      setUsers(response || []);
+      console.log('API Response:', response);
+      
+      // La réponse de l'API peut contenir les utilisateurs directement ou dans une propriété
+      const usersData = Array.isArray(response) ? response : response?.users || response?.data || [];
+      setUsers(usersData);
       
     } catch (err) {
       console.error('Erreur lors du chargement des utilisateurs:', err);
-      setError(err.message);
+      setError(`Erreur de connexion: ${err.message}`);
       
       // Fallback vers données de démo en cas d'erreur
       setUsers([
-        { id: 1, name: 'Jean Dupont', email: 'jean.dupont@campus.fr', level: 'student', created_at: '2024-09-01T10:00:00Z' },
-        { id: 2, name: 'Marie Martin', email: 'marie.martin@campus.fr', level: 'student', created_at: '2024-09-05T14:30:00Z' },
-        { id: 3, name: 'Pierre Durand', email: 'pierre.durand@campus.fr', level: 'mentor', created_at: '2024-08-15T09:15:00Z' },
-        { id: 4, name: 'Sophie Lemoine', email: 'sophie.lemoine@campus.fr', level: 'admin', created_at: '2024-07-20T16:45:00Z' },
+        { id: 1, name: 'Jean Dupont', email: 'jean.dupont@campus.fr', level: 'E1', created_at: '2024-09-01T10:00:00Z' },
+        { id: 2, name: 'Marie Martin', email: 'marie.martin@campus.fr', level: 'E2', created_at: '2024-09-05T14:30:00Z' },
+        { id: 3, name: 'Pierre Durand', email: 'pierre.durand@campus.fr', level: 'E3', created_at: '2024-08-15T09:15:00Z' },
+        { id: 4, name: 'Sophie Lemoine', email: 'sophie.lemoine@campus.fr', level: 'E4', created_at: '2024-07-20T16:45:00Z' },
       ]);
     } finally {
       setLoading(false);
@@ -48,45 +54,123 @@ const ModernUsersManagement = () => {
 
   const handleSubmit = async () => {
     try {
-      setLoading(true);
+      setSubmitting(true);
+      setError(null);
       
       if (editingUser) {
         // 🔥 MISE À JOUR UTILISATEUR
         const updatedUser = await apiService.updateUser(editingUser.id, formData);
+        console.log('User updated:', updatedUser);
+        
+        // Mettre à jour la liste locale en gardant l'ID original
         setUsers(users.map(user => 
-          user.id === editingUser.id ? updatedUser : user
+          user.id === editingUser.id ? { 
+            ...user, 
+            ...formData, 
+            id: editingUser.id, // Garder l'ID original
+            updated_at: new Date().toISOString() // Mettre à jour la date
+          } : user
         ));
       } else {
         // 🔥 CRÉATION UTILISATEUR
         const newUser = await apiService.createUser(formData);
-        setUsers([...users, newUser]);
+        console.log('User created:', newUser);
+        
+        // Créer un objet utilisateur complet pour la liste locale
+        const completeUser = {
+          id: newUser.id || Date.now(), // Utiliser l'ID de l'API ou timestamp
+          name: formData.name,
+          email: formData.email,
+          level: formData.level,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          ...newUser // Merger avec la réponse de l'API
+        };
+        
+        // Ajouter à la liste locale
+        setUsers(prevUsers => [...prevUsers, completeUser]);
       }
       
+      // Fermer le modal et réinitialiser le formulaire
       resetForm();
       setShowModal(false);
       
+      // Message de succès (optionnel)
+      console.log(editingUser ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès');
+      
     } catch (err) {
       console.error('Erreur lors de la sauvegarde:', err);
-      setError(err.message);
+      setError(`Erreur lors de la sauvegarde: ${err.message}`);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const handleDelete = async (userId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
       try {
-        setLoading(true);
+        setDeletingUserId(userId);
+        setError(null);
         
         // 🔥 SUPPRESSION UTILISATEUR
-        await apiService.deleteUser(userId);
-        setUsers(users.filter(user => user.id !== userId));
+        console.log('Attempting to delete user:', userId);
+        
+        // Vérifier si le token existe
+        const token = localStorage.getItem('token');
+        console.log('Token exists:', !!token);
+        
+        try {
+          // Appel API de suppression avec gestion spéciale pour les réponses vides
+          const response = await apiService.deleteUser(userId);
+          console.log('Delete API response:', response);
+        } catch (apiError) {
+          // Si l'erreur est due à une réponse vide (DELETE réussi), on l'ignore
+          if (apiError.message.includes('Unexpected end of JSON input') || 
+              apiError.message.includes('Failed to execute \'json\'')) {
+            console.log('Delete successful - API returned empty response (normal for DELETE)');
+          } else {
+            // Si c'est une vraie erreur, on la relance
+            throw apiError;
+          }
+        }
+        
+        console.log('User deleted successfully from API:', userId);
+        
+        // Retirer de la liste locale SEULEMENT après succès de l'API
+        setUsers(prevUsers => {
+          const newUsers = prevUsers.filter(user => user.id !== userId);
+          console.log('User removed from local state. Remaining users:', newUsers.length);
+          return newUsers;
+        });
+        
+        console.log('Suppression terminée avec succès');
         
       } catch (err) {
-        console.error('Erreur lors de la suppression:', err);
-        setError(err.message);
+        console.error('Erreur complète lors de la suppression:', err);
+        
+        // Messages d'erreur plus spécifiques
+        let errorMessage = 'Erreur inconnue';
+        if (err.message.includes('Failed to fetch')) {
+          errorMessage = 'Impossible de se connecter au serveur. Vérifiez votre connexion internet.';
+        } else if (err.message.includes('404')) {
+          errorMessage = 'Utilisateur non trouvé sur le serveur.';
+        } else if (err.message.includes('401')) {
+          errorMessage = 'Session expirée. Veuillez vous reconnecter.';
+        } else if (err.message.includes('403')) {
+          errorMessage = 'Permissions insuffisantes pour supprimer cet utilisateur.';
+        } else if (err.message.includes('500')) {
+          errorMessage = 'Erreur interne du serveur. Réessayez dans quelques instants.';
+        } else {
+          errorMessage = `Erreur du serveur: ${err.message}`;
+        }
+        
+        setError(errorMessage);
+        
+        // Ne pas retirer l'utilisateur de la liste locale en cas d'erreur
+        console.log('Suppression échouée, utilisateur conservé dans la liste');
+        
       } finally {
-        setLoading(false);
+        setDeletingUserId(null);
       }
     }
   };
@@ -100,6 +184,20 @@ const ModernUsersManagement = () => {
       level: user.level,
     });
     setShowModal(true);
+  };
+
+  // Test de connexion API
+  const testApiConnection = async () => {
+    try {
+      console.log('Testing API connection...');
+      const response = await apiService.healthCheck();
+      console.log('API Health check response:', response);
+      return true;
+    } catch (err) {
+      console.error('API connection failed:', err);
+      setError('Impossible de se connecter au serveur. Vérifiez votre connexion internet.');
+      return false;
+    }
   };
 
   const resetForm = () => {
@@ -174,7 +272,7 @@ const ModernUsersManagement = () => {
     </div>
   );
 
-  if (loading && users.length === 0) {
+    if (loading && users.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="relative">
@@ -332,7 +430,7 @@ const ModernUsersManagement = () => {
             <div className="flex justify-between pt-4 border-t border-gray-200">
               <button
                 onClick={() => handleEdit(user)}
-                disabled={loading}
+                disabled={deletingUserId === user.id || submitting}
                 className="flex items-center px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-xl transition-colors duration-300 disabled:opacity-50"
               >
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -342,13 +440,17 @@ const ModernUsersManagement = () => {
               </button>
               <button
                 onClick={() => handleDelete(user.id)}
-                disabled={loading}
+                disabled={deletingUserId === user.id || submitting}
                 className="flex items-center px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded-xl transition-colors duration-300 disabled:opacity-50"
               >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                Supprimer
+                {deletingUserId === user.id ? (
+                  <div className="w-4 h-4 mr-1 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                )}
+                {deletingUserId === user.id ? 'Suppression...' : 'Supprimer'}
               </button>
             </div>
           </div>
@@ -375,7 +477,7 @@ const ModernUsersManagement = () => {
               </h3>
               <button
                 onClick={() => setShowModal(false)}
-                disabled={loading}
+                disabled={submitting}
                 className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-300 disabled:opacity-50"
               >
                 <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -397,7 +499,7 @@ const ModernUsersManagement = () => {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
                   placeholder="Jean Dupont"
-                  disabled={loading}
+                  disabled={submitting}
                 />
               </div>
 
@@ -412,7 +514,7 @@ const ModernUsersManagement = () => {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
                   placeholder="jean@campus.fr"
-                  disabled={loading}
+                  disabled={submitting}
                 />
               </div>
 
@@ -427,7 +529,7 @@ const ModernUsersManagement = () => {
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
                   placeholder="••••••••"
-                  disabled={loading}
+                  disabled={submitting}
                 />
               </div>
 
@@ -439,11 +541,13 @@ const ModernUsersManagement = () => {
                   value={formData.level}
                   onChange={(e) => setFormData({ ...formData, level: e.target.value })}
                   className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
-                  disabled={loading}
+                  disabled={submitting}
                 >
-                  <option value="student">📚 Étudiant</option>
-                  <option value="mentor">🎓 Mentor</option>
-                  <option value="admin">👑 Administrateur</option>
+                  <option value="E1">🌱 E1 - Première année</option>
+                  <option value="E2">📚 E2 - Deuxième année</option>
+                  <option value="E3">🎓 E3 - Troisième année</option>
+                  <option value="E4">💼 E4 - Quatrième année</option>
+                  <option value="E5">👑 E5 - Cinquième année</option>
                 </select>
               </div>
 
@@ -452,7 +556,7 @@ const ModernUsersManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  disabled={loading}
+                  disabled={submitting}
                   className="px-6 py-3 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all duration-300 disabled:opacity-50"
                 >
                   Annuler
@@ -460,10 +564,10 @@ const ModernUsersManagement = () => {
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={loading || !formData.name || !formData.email || (!editingUser && !formData.password)}
+                  disabled={submitting || !formData.name || !formData.email || (!editingUser && !formData.password)}
                   className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
-                  {loading ? (
+                  {submitting ? (
                     <>
                       <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       {editingUser ? 'Modification...' : 'Création...'}

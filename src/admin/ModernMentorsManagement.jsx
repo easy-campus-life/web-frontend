@@ -10,7 +10,9 @@ const ModernMentorsManagement = () => {
   const [editingRelation, setEditingRelation] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSubject, setFilterSubject] = useState('all');
-  const [activeView, setActiveView] = useState('relations'); // 'relations' or 'stats'
+  const [activeView, setActiveView] = useState('relations');
+  const [deletingRelationId, setDeletingRelationId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     mentor_id: '',
@@ -39,18 +41,25 @@ const ModernMentorsManagement = () => {
       setLoading(true);
       setError(null);
       
-      // 🔥 CHARGEMENT PARALLÈLE DES DONNÉES
+      // 🔥 CHARGEMENT PARALLÈLE DES DONNÉES - CORRIGÉ
       const [mentorRelationsResponse, usersResponse] = await Promise.all([
-        apiService.getMentoring().catch(() => []),
+        apiService.getMentoringSessions().catch(() => []),
         apiService.getUsers().catch(() => [])
       ]);
       
-      setMentorRelations(mentorRelationsResponse || []);
-      setUsers(usersResponse || []);
+      console.log('Mentor relations response:', mentorRelationsResponse);
+      console.log('Users response:', usersResponse);
+      
+      // Gestion flexible de la réponse API
+      const relationsData = Array.isArray(mentorRelationsResponse) ? mentorRelationsResponse : mentorRelationsResponse?.data || [];
+      const usersData = Array.isArray(usersResponse) ? usersResponse : usersResponse?.data || [];
+      
+      setMentorRelations(relationsData);
+      setUsers(usersData);
       
     } catch (err) {
       console.error('Erreur lors du chargement:', err);
-      setError(err.message);
+      setError(`Erreur de connexion: ${err.message}`);
       
       // Fallback vers données de démo
       setMentorRelations([
@@ -61,8 +70,8 @@ const ModernMentorsManagement = () => {
           subject: 'web-dev',
           description: 'Accompagnement en développement web full-stack',
           created_at: '2025-01-15T10:00:00Z',
-          mentor: { id: 1, name: 'Dr. Sarah Chen', email: 'sarah@campus.fr', level: 'mentor' },
-          sponsored: { id: 2, name: 'Emma Rousseau', email: 'emma@campus.fr', level: 'student' }
+          mentor: { id: 1, name: 'Dr. Sarah Chen', email: 'sarah@campus.fr', level: 'admin' },
+          sponsored: { id: 2, name: 'Emma Rousseau', email: 'emma@campus.fr', level: 'E1' }
         },
         {
           id: 2,
@@ -72,15 +81,18 @@ const ModernMentorsManagement = () => {
           description: 'Introduction au machine learning et IA',
           created_at: '2025-02-20T14:30:00Z',
           mentor: { id: 3, name: 'Marc Dubois', email: 'marc@campus.fr', level: 'mentor' },
-          sponsored: { id: 4, name: 'Thomas Leroy', email: 'thomas@campus.fr', level: 'student' }
+          sponsored: { id: 4, name: 'Thomas Leroy', email: 'thomas@campus.fr', level: 'E2' }
         }
       ]);
       
-      setUsers([
-        { id: 1, name: 'Dr. Sarah Chen', email: 'sarah@campus.fr', level: 'mentor' },
-        { id: 2, name: 'Emma Rousseau', email: 'emma@campus.fr', level: 'student' },
+                    setUsers([
+        { id: 1, name: 'Dr. Sarah Chen', email: 'sarah@campus.fr', level: 'admin' },
+        { id: 2, name: 'Emma Rousseau', email: 'emma@campus.fr', level: 'E1' },
         { id: 3, name: 'Marc Dubois', email: 'marc@campus.fr', level: 'mentor' },
-        { id: 4, name: 'Thomas Leroy', email: 'thomas@campus.fr', level: 'student' }
+        { id: 4, name: 'Thomas Leroy', email: 'thomas@campus.fr', level: 'E2' },
+        { id: 5, name: 'Julie Martin', email: 'julie@campus.fr', level: 'E3' },
+        { id: 6, name: 'Pierre Durand', email: 'pierre@campus.fr', level: 'E4' },
+        { id: 7, name: 'Sophie Lemoine', email: 'sophie@campus.fr', level: 'E5' }
       ]);
     } finally {
       setLoading(false);
@@ -89,18 +101,56 @@ const ModernMentorsManagement = () => {
 
   const handleSubmit = async () => {
     try {
-      setLoading(true);
+      setSubmitting(true);
+      setError(null);
+      
+      // Validation
+      if (formData.mentor_id === formData.sponsored_id) {
+        setError('Le mentor et l\'étudiant ne peuvent pas être la même personne');
+        return;
+      }
+      
+      const submitData = {
+        mentor_id: parseInt(formData.mentor_id),
+        sponsored_id: parseInt(formData.sponsored_id),
+        subject: formData.subject,
+        description: formData.description
+      };
+      
+      console.log('Submitting data:', submitData);
       
       if (editingRelation) {
-        // 🔥 MISE À JOUR RELATION MENTORAT
-        const updatedRelation = await apiService.updateMentoring(editingRelation.id, formData);
+        // 🔥 MISE À JOUR RELATION MENTORAT - CORRIGÉ
+        const updatedRelation = await apiService.updateMentoringSession(editingRelation.id, submitData);
+        console.log('Relation updated:', updatedRelation);
+        
+        // Mise à jour locale avec enrichissement des données
         setMentorRelations(mentorRelations.map(relation => 
-          relation.id === editingRelation.id ? updatedRelation : relation
+          relation.id === editingRelation.id ? {
+            ...relation,
+            ...submitData,
+            mentor: users.find(u => u.id === submitData.mentor_id),
+            sponsored: users.find(u => u.id === submitData.sponsored_id),
+            updated_at: new Date().toISOString()
+          } : relation
         ));
       } else {
-        // 🔥 CRÉATION RELATION MENTORAT
-        const newRelation = await apiService.createMentoring(formData);
-        setMentorRelations([...mentorRelations, newRelation]);
+        // 🔥 CRÉATION RELATION MENTORAT - CORRIGÉ
+        const newRelation = await apiService.createMentoringSession(submitData);
+        console.log('Relation created:', newRelation);
+        
+        // Création d'un objet complet pour la liste locale
+        const completeRelation = {
+          id: newRelation.id || Date.now(),
+          ...submitData,
+          mentor: users.find(u => u.id === submitData.mentor_id),
+          sponsored: users.find(u => u.id === submitData.sponsored_id),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          ...newRelation
+        };
+        
+        setMentorRelations(prevRelations => [...prevRelations, completeRelation]);
       }
       
       resetForm();
@@ -108,26 +158,60 @@ const ModernMentorsManagement = () => {
       
     } catch (err) {
       console.error('Erreur lors de la sauvegarde:', err);
-      setError(err.message);
+      setError(`Erreur lors de la sauvegarde: ${err.message}`);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const handleDelete = async (relationId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cette relation de mentorat ?')) {
       try {
-        setLoading(true);
+        setDeletingRelationId(relationId);
+        setError(null);
         
-        // 🔥 SUPPRESSION RELATION MENTORAT
-        await apiService.deleteMentoring(relationId);
-        setMentorRelations(mentorRelations.filter(relation => relation.id !== relationId));
+        console.log('Attempting to delete relation:', relationId);
+        
+        try {
+          // 🔥 SUPPRESSION RELATION MENTORAT - CORRIGÉ
+          await apiService.deleteMentoringSession(relationId);
+          console.log('Relation deleted successfully from API');
+        } catch (apiError) {
+          // Gestion de l'erreur JSON pour les réponses vides (DELETE réussi)
+          if (apiError.message.includes('Unexpected end of JSON input') || 
+              apiError.message.includes('Failed to execute \'json\'')) {
+            console.log('Delete successful - API returned empty response (normal for DELETE)');
+          } else {
+            throw apiError;
+          }
+        }
+        
+        // Retirer de la liste locale
+        setMentorRelations(prevRelations => 
+          prevRelations.filter(relation => relation.id !== relationId)
+        );
+        
+        console.log('Relation supprimée avec succès');
         
       } catch (err) {
         console.error('Erreur lors de la suppression:', err);
-        setError(err.message);
+        
+        let errorMessage = 'Erreur inconnue';
+        if (err.message.includes('Failed to fetch')) {
+          errorMessage = 'Impossible de se connecter au serveur. Vérifiez votre connexion internet.';
+        } else if (err.message.includes('404')) {
+          errorMessage = 'Relation de mentorat non trouvée.';
+        } else if (err.message.includes('401')) {
+          errorMessage = 'Session expirée. Veuillez vous reconnecter.';
+        } else if (err.message.includes('403')) {
+          errorMessage = 'Permissions insuffisantes.';
+        } else {
+          errorMessage = `Erreur du serveur: ${err.message}`;
+        }
+        
+        setError(errorMessage);
       } finally {
-        setLoading(false);
+        setDeletingRelationId(null);
       }
     }
   };
@@ -157,12 +241,9 @@ const ModernMentorsManagement = () => {
     return subjectsList.find(s => s.id === subject) || subjectsList.find(s => s.id === 'general');
   };
 
-  const getAvailableMentors = () => {
-    return users.filter(user => user.level === 'mentor' || user.level === 'admin');
-  };
-
-  const getAvailableStudents = () => {
-    return users.filter(user => user.level === 'student');
+  // 🔥 CORRIGÉ : Tous les utilisateurs peuvent être sélectionnés
+  const getAllUsers = () => {
+    return users.filter(user => user.id && user.name); // Filtrer seulement les utilisateurs valides
   };
 
   const filteredRelations = mentorRelations.filter(relation => {
@@ -176,10 +257,11 @@ const ModernMentorsManagement = () => {
   });
 
   // 🔥 CALCUL DES STATISTIQUES
+  const allUsers = getAllUsers();
   const stats = {
     totalRelations: mentorRelations.length,
-    totalMentors: getAvailableMentors().length,
-    totalStudents: getAvailableStudents().length,
+    totalMentors: [...new Set(mentorRelations.map(r => r.mentor_id))].length,
+    totalStudents: allUsers.length,
     activeSubjects: [...new Set(mentorRelations.map(r => r.subject))].length
   };
 
@@ -367,6 +449,7 @@ const ModernMentorsManagement = () => {
                         <div className="flex-1">
                           <div className="text-sm text-gray-500">Mentor</div>
                           <div className="font-semibold text-gray-800">{relation.mentor?.name || 'Mentor inconnu'}</div>
+                          <div className="text-xs text-gray-500">{relation.mentor?.level || ''}</div>
                         </div>
                       </div>
                       
@@ -385,6 +468,7 @@ const ModernMentorsManagement = () => {
                         <div className="flex-1">
                           <div className="text-sm text-gray-500">Étudiant</div>
                           <div className="font-semibold text-gray-800">{relation.sponsored?.name || 'Étudiant inconnu'}</div>
+                          <div className="text-xs text-gray-500">{relation.sponsored?.level || ''}</div>
                         </div>
                       </div>
                     </div>
@@ -407,7 +491,7 @@ const ModernMentorsManagement = () => {
                     <div className="flex justify-between pt-4 border-t border-gray-200">
                       <button
                         onClick={() => handleEdit(relation)}
-                        disabled={loading}
+                        disabled={deletingRelationId === relation.id || submitting}
                         className="flex items-center px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-xl transition-all duration-300 hover:scale-105 disabled:opacity-50"
                       >
                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -417,13 +501,17 @@ const ModernMentorsManagement = () => {
                       </button>
                       <button
                         onClick={() => handleDelete(relation.id)}
-                        disabled={loading}
+                        disabled={deletingRelationId === relation.id || submitting}
                         className="flex items-center px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded-xl transition-all duration-300 hover:scale-105 disabled:opacity-50"
                       >
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        Supprimer
+                        {deletingRelationId === relation.id ? (
+                          <div className="w-4 h-4 mr-1 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
+                        {deletingRelationId === relation.id ? 'Suppression...' : 'Supprimer'}
                       </button>
                     </div>
                   </div>
@@ -442,7 +530,7 @@ const ModernMentorsManagement = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
               { title: 'Relations actives', value: stats.totalRelations, icon: '🤝', gradient: 'from-orange-500 to-red-500' },
-              { title: 'Mentors disponibles', value: stats.totalMentors, icon: '👨‍🏫', gradient: 'from-green-500 to-emerald-500' },
+              { title: 'Mentors actifs', value: stats.totalMentors, icon: '👨‍🏫', gradient: 'from-green-500 to-emerald-500' },
               { title: 'Étudiants', value: stats.totalStudents, icon: '🎓', gradient: 'from-blue-500 to-cyan-500' },
               { title: 'Sujets actifs', value: stats.activeSubjects, icon: '📚', gradient: 'from-purple-500 to-pink-500' }
             ].map((stat, index) => (
@@ -509,8 +597,8 @@ const ModernMentorsManagement = () => {
               </h3>
               <button
                 onClick={() => setShowModal(false)}
-                disabled={loading}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-300"
+                disabled={submitting}
+                className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-300 disabled:opacity-50"
               >
                 <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -523,44 +611,62 @@ const ModernMentorsManagement = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    👨‍🏫 Mentor
+                    👨‍🏫 Utilisateur Mentor
                   </label>
                   <select
                     required
                     value={formData.mentor_id}
-                    onChange={(e) => setFormData({ ...formData, mentor_id: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, mentor_id: e.target.value })}
                     className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-300"
-                    disabled={loading}
+                    disabled={submitting}
                   >
-                    <option value="">Sélectionner un mentor</option>
-                    {getAvailableMentors().map(mentor => (
-                      <option key={mentor.id} value={mentor.id}>
-                        {mentor.name} - {mentor.email}
+                    <option value="">Sélectionner un utilisateur mentor</option>
+                    {getAllUsers().map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.level || 'N/A'}) - {user.email}
                       </option>
                     ))}
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">Utilisateur qui va aider (mentor)</p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    🎓 Étudiant
+                    🎓 Utilisateur Accompagné
                   </label>
                   <select
                     required
                     value={formData.sponsored_id}
-                    onChange={(e) => setFormData({ ...formData, sponsored_id: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, sponsored_id: e.target.value })}
                     className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-300"
-                    disabled={loading}
+                    disabled={submitting}
                   >
-                    <option value="">Sélectionner un étudiant</option>
-                    {getAvailableStudents().map(student => (
-                      <option key={student.id} value={student.id}>
-                        {student.name} - {student.email}
-                      </option>
-                    ))}
+                    <option value="">Sélectionner un utilisateur à accompagner</option>
+                    {getAllUsers()
+                      .filter(user => user.id.toString() !== formData.mentor_id)
+                      .map(user => (
+                        <option key={user.id} value={user.id}>
+                          {user.name} ({user.level || 'N/A'}) - {user.email}
+                        </option>
+                      ))}
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">Utilisateur qui va être accompagné</p>
                 </div>
               </div>
+
+              {/* Avertissement si même personne */}
+              {formData.mentor_id && formData.mentor_id === formData.sponsored_id && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.08 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <p className="text-yellow-800 text-sm">
+                      ⚠️ Le mentor et l'étudiant accompagné ne peuvent pas être la même personne
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -571,7 +677,7 @@ const ModernMentorsManagement = () => {
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-300"
-                  disabled={loading}
+                  disabled={submitting}
                 >
                   <option value="">Sélectionner un sujet</option>
                   {subjectsList.map(subject => (
@@ -592,7 +698,7 @@ const ModernMentorsManagement = () => {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-300 resize-none"
                   placeholder="Décrivez les objectifs et le contenu du mentorat..."
-                  disabled={loading}
+                  disabled={submitting}
                 />
               </div>
 
@@ -601,7 +707,7 @@ const ModernMentorsManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  disabled={loading}
+                  disabled={submitting}
                   className="px-6 py-3 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all duration-300 disabled:opacity-50"
                 >
                   Annuler
@@ -609,10 +715,10 @@ const ModernMentorsManagement = () => {
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={loading || !formData.mentor_id || !formData.sponsored_id || !formData.subject}
+                  disabled={submitting || !formData.mentor_id || !formData.sponsored_id || !formData.subject || formData.mentor_id === formData.sponsored_id}
                   className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-2xl hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
-                  {loading ? (
+                  {submitting ? (
                     <>
                       <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       {editingRelation ? 'Modification...' : 'Création...'}
