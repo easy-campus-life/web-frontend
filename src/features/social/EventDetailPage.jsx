@@ -7,6 +7,7 @@ const EventDetailPage = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isParticipating, setIsParticipating] = useState(false);
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -14,6 +15,9 @@ const EventDetailPage = () => {
       try {
         const data = await apiService.getEvent(eventId);
         setEvent(data);
+        // Vérifier si l'utilisateur participe déjà à l'événement
+        // Ceci est un exemple, vous devrez adapter selon votre API
+        setIsParticipating(data.isUserParticipating || false);
         setError(null);
       } catch (err) {
         console.error('Erreur lors du chargement des détails de l\'événement:', err);
@@ -25,6 +29,18 @@ const EventDetailPage = () => {
 
     fetchEventDetails();
   }, [eventId]);
+  
+  const handleParticipate = async () => {
+    try {
+      // Appel API pour participer à l'événement
+      // À adapter selon votre API
+      await apiService.participateEvent(eventId);
+      setIsParticipating(true);
+    } catch (err) {
+      console.error('Erreur lors de la participation à l\'événement:', err);
+      alert('Impossible de participer à l\'événement. Veuillez réessayer.');
+    }
+  };
 
   if (loading) {
     return (
@@ -87,15 +103,35 @@ const EventDetailPage = () => {
       </Link>
       
       <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        {event.image && (
-          <div className="h-64 w-full overflow-hidden">
-            <img 
-              src={event.image} 
-              alt={event.title} 
-              className="w-full h-full object-cover"
-            />
+        <div className="relative">
+          <div className="h-64 w-full overflow-hidden bg-gradient-to-r from-blue-400 to-purple-600">
+            {event.image_url ? (
+              <img 
+                src={event.image_url} 
+                alt={event.title} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white text-opacity-30 text-6xl">
+                🎓
+              </div>
+            )}
           </div>
-        )}
+          
+          {/* Badge de catégorie */}
+          <div className="absolute top-4 left-4">
+            <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+              {event.category || 'Social'}
+            </span>
+          </div>
+          
+          {/* Badge de participants */}
+          <div className="absolute top-4 right-4">
+            <span className="bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+              {event.attendance || '0'} participants
+            </span>
+          </div>
+        </div>
         
         <div className="p-6">
           <div className="flex items-center gap-2 text-sm text-blue-600 mb-2">
@@ -140,10 +176,38 @@ const EventDetailPage = () => {
             )}
           </div>
           
-          <div className="prose max-w-none">
+          <div className="prose max-w-none mb-8">
             <p className="text-gray-700 whitespace-pre-line">{event.description}</p>
           </div>
+          
+          <div className="mt-8 border-t pt-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-gray-600">
+                  {new Date(event.date_start).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </span>
+              </div>
+              
+              <button 
+                onClick={handleParticipate}
+                disabled={isParticipating}
+                className={`px-8 py-3 rounded-lg font-medium text-center w-full md:w-auto ${isParticipating ? 'bg-green-500 text-white cursor-default' : 'bg-blue-500 hover:bg-blue-600 text-white transition-colors'}`}
+              >
+                {isParticipating ? 'Vous participez' : 'Participer'}
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
+      
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">Autres événements à venir</h2>
+        <p className="text-gray-500 mb-4">Découvrez d'autres événements qui pourraient vous intéresser</p>
+        
+        {/* Ici, vous pourriez ajouter une liste d'événements similaires */}
       </div>
     </div>
   );

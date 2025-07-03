@@ -136,6 +136,12 @@ class ApiService {
     return this.request('/events/upcoming/');
   }
   
+  async participateEvent(eventId) {
+    return this.request(`/events/${eventId}/participate`, {
+      method: 'POST',
+    });
+  }
+  
   // === MENTORING ===
   async getMentoringSessions(skip = 0, limit = 100) {
     return this.request(`/mentoring/?skip=${skip}&limit=${limit}`);
@@ -257,6 +263,11 @@ class ApiService {
   
   async getRealTimeAffluence() {
     return this.request('/presences/analytics/real-time');
+  }
+  
+  async getAffluenceData() {
+    // Utilise la méthode getRealTimeAffluence pour récupérer les données d'affluence
+    return this.getRealTimeAffluence();
   }
   
   async getPeakTimes() {
