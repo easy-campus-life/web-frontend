@@ -50,7 +50,7 @@ class ApiService {
   }
 
   async login(credentials) {
-    const response = await this.request('/auth/login', {
+    const response = await this.request('/auth/login-json', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
@@ -58,6 +58,7 @@ class ApiService {
     if (response.access_token) {
       this.token = response.access_token;
       localStorage.setItem('token', this.token);
+      localStorage.setItem('token_type', response.token_type);
     }
     
     return response;
@@ -136,10 +137,18 @@ class ApiService {
     return this.request('/events/upcoming/');
   }
   
-  async participateEvent(eventId) {
-    return this.request(`/events/${eventId}/participate`, {
+  async participateEvent(eventId, email) {
+    return this.request('/event-participations/', {
       method: 'POST',
+      body: JSON.stringify({
+        event_id: eventId,
+        email: email
+      }),
     });
+  }
+
+  async getEventParticipantCount(eventId) {
+    return this.request(`/event-participations/event/${eventId}/participant-count`);
   }
   
   // === MENTORING ===
