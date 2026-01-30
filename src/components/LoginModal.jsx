@@ -122,9 +122,9 @@ const LoginModal = ({ isOpen, onClose, onSuccess }) => {
                 />
                 <span className="ml-2 text-slate-600">Se souvenir de moi</span>
               </label>
-              <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
+              <button type="button" className="text-blue-600 hover:text-blue-700 font-medium">
                 Mot de passe oublié ?
-              </a>
+              </button>
             </div>
 
             <button

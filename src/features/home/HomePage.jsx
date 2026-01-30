@@ -162,78 +162,7 @@ const HomePage = () => {
     fetchAffluenceData();
   }, []);
   
-  const [campusNews, setCampusNews] = useState([]);
-  
   const [affluenceData, setAffluenceData] = useState({});
-  
-  // Les événements sont déjà déclarés plus haut
-  
-  const [mentorRequests, setMentorRequests] = useState([
-    {
-      id: 1,
-      student: 'Sophie Martin',
-      subject: 'Programmation React',
-      urgency: 'Moyenne',
-      date: '2025-07-03',
-      status: 'En attente'
-    },
-    {
-      id: 2,
-      student: 'Thomas Dubois',
-      subject: 'Bases de données NoSQL',
-      urgency: 'Élevée',
-      date: '2025-07-02',
-      status: 'En attente'
-    },
-    {
-      id: 3,
-      student: 'Camille Leroy',
-      subject: 'Sécurité Web',
-      urgency: 'Faible',
-      date: '2025-07-04',
-      status: 'Planifié'
-    }
-  ]);
-
-  const getCategoryConfig = (category) => {
-    const configs = {
-      'Développement': { gradient: 'from-blue-500 to-cyan-500', color: 'bg-blue-100 text-blue-800', icon: '💻' },
-      'Carrière': { gradient: 'from-green-500 to-emerald-500', color: 'bg-green-100 text-green-800', icon: '🚀' },
-      'Ressources': { gradient: 'from-purple-500 to-pink-500', color: 'bg-purple-100 text-purple-800', icon: '📚' },
-      'Événements': { gradient: 'from-orange-500 to-red-500', color: 'bg-orange-100 text-orange-800', icon: '🎉' },
-      'Campus': { gradient: 'from-indigo-500 to-purple-500', color: 'bg-indigo-100 text-indigo-800', icon: '🏫' }
-    };
-    return configs[category] || { gradient: 'from-gray-500 to-gray-600', color: 'bg-gray-100 text-gray-800', icon: '💬' };
-  };
-
-  const getNewsBadgeColor = (badgeColor) => {
-    const colors = {
-      'blue': 'bg-blue-100 text-blue-800',
-      'green': 'bg-green-100 text-green-800',
-      'yellow': 'bg-yellow-100 text-yellow-800',
-      'red': 'bg-red-100 text-red-800'
-    };
-    return colors[badgeColor] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getAffluenceColor = (niveau) => {
-    if (!niveau) return 'bg-gray-200 text-gray-600';
-    
-    switch (niveau.toLowerCase()) {
-      case 'élevée':
-      case 'elevee':
-      case 'high':
-        return 'bg-red-100 text-red-800';
-      case 'moyenne':
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'faible':
-      case 'low':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">

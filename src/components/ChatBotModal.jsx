@@ -29,7 +29,7 @@ const ChatBotModal = ({ onClose, inline = false }) => {
     if (!inline) {
       inputRef.current?.focus();
     }
-  }, []);
+  }, [inline]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

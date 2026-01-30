@@ -110,9 +110,9 @@ const LoginPage = () => {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+              <button type="button" className="font-medium text-blue-600 hover:text-blue-500">
                 Mot de passe oublié?
-              </a>
+              </button>
             </div>
           </div>
 
