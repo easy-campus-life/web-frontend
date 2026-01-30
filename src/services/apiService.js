@@ -1,5 +1,5 @@
 // services/apiService.js
-const API_BASE_URL = 'https://backend-production-ecb4.up.railway.app';
+const API_BASE_URL = 'https://backend-production-3740d.up.railway.app';
 
 class ApiService {
   constructor() {
