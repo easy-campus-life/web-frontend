@@ -186,20 +186,6 @@ const ModernUsersManagement = () => {
     setShowModal(true);
   };
 
-  // Test de connexion API
-  const testApiConnection = async () => {
-    try {
-      console.log('Testing API connection...');
-      const response = await apiService.healthCheck();
-      console.log('API Health check response:', response);
-      return true;
-    } catch (err) {
-      console.error('API connection failed:', err);
-      setError('Impossible de se connecter au serveur. Vérifiez votre connexion internet.');
-      return false;
-    }
-  };
-
   const resetForm = () => {
     setEditingUser(null);
     setFormData({

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import apiService from '../services/apiService';
 
 const ModernDashboardOverview = ({ setActiveTab }) => {
@@ -15,11 +15,7 @@ const ModernDashboardOverview = ({ setActiveTab }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -176,7 +172,11 @@ const ModernDashboardOverview = ({ setActiveTab }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   // 🔥 FONCTION UTILITAIRE POUR LE TEMPS ÉCOULÉ
   const getTimeAgo = (dateString) => {
